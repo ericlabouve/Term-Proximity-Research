@@ -1,6 +1,5 @@
 
 from VectorCollection import VectorCollection, VectorType
-from string import punctuation
 import json
 
 if __name__ == "__main__":
@@ -12,10 +11,10 @@ if __name__ == "__main__":
     wf_vertex_db_json = json.load(open(json_base_dir + 'wfVertexDb.json'))
 
     #docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", False, False, 2, VectorType.DOCUMENTS)
-    docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents.txt", False, True, 2,
-                            VectorType.DOCUMENTS)
+    #docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents.txt", False, True, 2, VectorType.DOCUMENTS)
 
+    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", False, True, 2, VectorType.DOCUMENTS)
+    #qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/queries.txt", False, True, 2, VectorType.DOCUMENTS)
 
-
-    print(docs)
-    #print(punctuation)
+    #print(docs)
+    print(qrys)

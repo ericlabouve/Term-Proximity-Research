@@ -86,8 +86,33 @@ class VectorCollection:
                                 self.add_to_inverted_index(cur_doc_id, term, cur_doc_idx)
                                 cur_doc_idx += 1
 
-    def parse_queries(self, file_path, noisewords_on, stemming_on, min_word_len):
-        pass
+    def parse_queries(self, file_path, stop_words_on, stemming_on, min_word_len):
+        with open(file_path) as file:
+            cur_doc_id = -1 # Current Doc Id
+            cur_doc_idx = 0 # Current Doc Idx
+            inside_W = False
+            for line in file:
+                if '.I' in line: # Contains Id
+                    cur_doc_id = int(re.sub(r'\s+', '', re.sub(r".I", '', line)))  # Remove .I and spaces
+                    textvector = QueryVector()
+                    textvector.add_id(cur_doc_id)
+                    self.id_to_textvector[cur_doc_id] = textvector
+                    inside_W = False
+                elif '.W' in line:
+                    inside_W = True
+                    cur_doc_idx = 0 # Reset for next document
+                elif inside_W: # In the body of the Document
+                    for term in line.split():
+                        term = re.sub(r'[^\w\s]', '', term.lower()) # Remove punctuation
+                        if len(term) >= min_word_len: # Satisfies min length
+                            if stemming_on:
+                                term = self.stemmer.stem(term)
+                            # If (stop words not on and term is not a stop word) or (stop words on)
+                            if (not stop_words_on and term not in self.stop_words) or stop_words_on:
+                                self.id_to_textvector[cur_doc_id].add_term(term) # Add term to term_to_freq
+                                # Add term to inverted index
+                                self.add_to_inverted_index(cur_doc_id, term, cur_doc_idx)
+                                cur_doc_idx += 1
 
 
 
