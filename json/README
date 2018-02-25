@@ -1,0 +1,11 @@
+adjList.json gives all the adjacency nodes of each node.
+
+edgeList.json gives edges between two nodes and the weight of the edge.
+
+idToLabel.json and labelToId.json give the mapping from ID to node label.
+
+wfVertexDB contains a list of all the nodes that are word forms (i.e., word expressions). The rest of the nodes are senses.
+
+
+Here is a list of benchmarks:
+http://ir.dcs.gla.ac.uk/resources/test_collections/
