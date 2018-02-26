@@ -8,8 +8,8 @@ from Posting import Posting
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from collections import defaultdict
-from string import punctuation
 import re
+
 
 class VectorType(Enum):
     DOCUMENTS = 1
@@ -21,9 +21,9 @@ class VectorCollection:
     stop_words = set(stopwords.words('english'))
 
     def __init__(self, file_path, stop_words_on, stemming_on, min_word_len, vector_type):
-        # Maps TextVector ID to TextVector
+        # Maps {doc id : TextVector}
         self.id_to_textvector = {}
-        # Inverted Index: Maps a term to a dict of {doc id : Posting}
+        # Maps {string term : {doc id : Posting}}
         self.term_to_postings = defaultdict(dict)
         # Initialize Stemmer
         self.stemmer = PorterStemmer()
@@ -49,6 +49,8 @@ class VectorCollection:
                 break
             a += 1
         return s
+
+# __________________Read VectorCollection File Methods__________________
 
     def add_to_inverted_index(self, doc_id, term, term_offset):
         term_postings = self.term_to_postings[term] # {doc id : Posting}
@@ -114,7 +116,23 @@ class VectorCollection:
                                 self.add_to_inverted_index(cur_doc_id, term, cur_doc_idx)
                                 cur_doc_idx += 1
 
+# __________________Normalization Methods__________________
 
+    # Normalize the current VectorCollection against the vectors in the given VectorCollection
+    # vector_collection is intended to be the document textvector collection
+    def normalize(self, vector_collection):
+        for id, textvector in self.id_to_textvector.items():
+            textvector.normalize(vector_collection)
+
+    # Returns the number of vectors that contains the term
+    def get_doc_freq(self, term):
+        if term in self.term_to_postings:
+            return len(self.term_to_postings[term])
+        return 0
+
+    # Returns the number of vectors in the collection
+    def get_num_vecotrs(self):
+        return len(self.id_to_textvector)
 
 
 
