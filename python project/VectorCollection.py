@@ -8,7 +8,8 @@ from Posting import Posting
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from collections import defaultdict
-import re
+import DistanceFunctions as dist_fs
+import re, sys
 
 
 class VectorType(Enum):
@@ -18,7 +19,25 @@ class VectorType(Enum):
 
 class VectorCollection:
     # Set of stop words
-    stop_words = set(stopwords.words('english'))
+    #stop_words = set(stopwords.words('english'))
+    stop_words = {"a", "about", "above", "all", "along",
+            "also", "although", "am", "an", "and", "any", "are", "aren't", "as", "at",
+            "be", "because", "been", "but", "by", "can", "cannot", "could", "couldn't",
+            "did", "didn't", "do", "does", "doesn't", "e.g.", "either", "etc", "etc.",
+            "even", "ever", "enough", "for", "from", "further", "get", "gets", "got", "had", "have",
+            "hardly", "has", "hasn't", "having", "he", "hence", "her", "here",
+            "hereby", "herein", "hereof", "hereon", "hereto", "herewith", "him",
+            "his", "how", "however", "i", "i.e.", "if", "in", "into", "it", "it's", "its",
+            "me", "more", "most", "mr", "my", "near", "nor", "now", "no", "not", "or", "on", "of", "onto",
+            "other", "our", "out", "over", "really", "said", "same", "she",
+            "should", "shouldn't", "since", "so", "some", "such",
+            "than", "that", "the", "their", "them", "then", "there", "thereby",
+            "therefore", "therefrom", "therein", "thereof", "thereon", "thereto",
+            "therewith", "these", "they", "this", "those", "through", "thus", "to",
+            "too", "under", "until", "unto", "upon", "us", "very", "was", "wasn't",
+            "we", "were", "what", "when", "where", "whereby", "wherein", "whether",
+            "which", "while", "who", "whom", "whose", "why", "with", "without",
+            "would", "you", "your", "yours", "yes"}
 
     def __init__(self, file_path, stop_words_on, stemming_on, min_word_len, vector_type):
         # Maps {doc id : TextVector}
@@ -134,6 +153,23 @@ class VectorCollection:
     def get_num_vecotrs(self):
         return len(self.id_to_textvector)
 
+# __________________Distance Methods__________________
+
+    # Computes ALL distances for ALL Queries x Documents.
+    # Stores results in a map {Query id : [Doc Ids]} where Doc Ids are
+    # sorted in order of relevance.
+    # self - Intended to be the Query VectorCollection
+    # documents - Intended to be the Documents VectorCollection
+    # dist_obj - A object that holds a distance function
+    # doc_limit - An upper limit for the number of document ids returned per query
+    # returns a map {Query id : [Doc Ids]}
+    def find_closest_docs(self, documents, dist_obj, doc_limit = sys.maxsize) -> map:
+        results = {}
+        for id, qry_vector in self.id_to_textvector.items():
+            dist_obj.set_query(qry_vector)
+            ranked_docs = dist_fs.find_closest_docs(documents, dist_obj, doc_limit=doc_limit)
+            results[id] = ranked_docs
+        return results
 
 
 

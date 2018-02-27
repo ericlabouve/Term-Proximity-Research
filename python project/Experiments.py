@@ -4,6 +4,7 @@
 
 from VectorCollection import VectorCollection, VectorType
 from DistanceFunctions import CosineFunction
+import ScoringFunctions as score_fs
 import json
 
 if __name__ == "__main__":
@@ -15,20 +16,22 @@ if __name__ == "__main__":
     wf_vertex_db_json = json.load(open(json_base_dir + 'wfVertexDb.json'))
 
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", False, False, 2, VectorType.DOCUMENTS)
-    #docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents.txt", False, True, 2, VectorType.DOCUMENTS)
+    #docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents.txt", True, False, 0, VectorType.DOCUMENTS)
 
     qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", False, False, 2, VectorType.QUERIES)
-    #qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/queries.txt", False, True, 2, VectorType.QUERIES)
+    #qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/queries.txt", True, False, 0, VectorType.QUERIES)
+
+    relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
 
     # Cosine Test
     docs.normalize(docs)
     qrys.normalize(docs)
-    qv = qrys.id_to_textvector[1]
-    cosine = CosineFunction(docs)
-    cosine.set_query(qv)
-    close_docs = qv.find_closest_docs(docs, cosine)[0:10]
-    print(close_docs)
-    # Compute Map
 
-    #print(docs)
-    #print(qrys)
+    results = qrys.find_closest_docs(docs, CosineFunction(docs), doc_limit=20)
+    print(score_fs.compute_avg_map(results, relevant_docs, query_limit=20))
+
+
+
+
+
+

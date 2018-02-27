@@ -1,6 +1,9 @@
 .I 1
 .W
-the cat's cat
+a a b a c a
 .I 2
 .W
-the dog and cat
+b b a a c c a
+.I 3
+.W
+a c c

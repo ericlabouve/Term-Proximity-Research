@@ -14,7 +14,7 @@ public class CompareDocsUtil {
     /**
      * @param path File path
      * @param best Beginning range for human judgement
-     * @param best Ending range for human judgement
+     * @param worst Ending range for human judgement
      * @return Mapping from Queries to a list of related documents
      */
     public static HashMap<Integer, ArrayList<Integer>> readHumanJudgement(String path, int best, int worst) {

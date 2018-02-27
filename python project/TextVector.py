@@ -36,20 +36,7 @@ class TextVector:
                 highest = freq
         return highest
 
-# __________________Distance Methods__________________
 
-    # Finds the closest document to this TextVector
-    # This TextVector is inteded to be a query
-    # documents is a VectorCollection
-    # dist_f is an object that holds a distance function
-    def find_closest_docs(self, documents, dist_obj):
-        ranked_docs = [] # Holds (doc id, distance)
-        for docid, docvector in documents.id_to_textvector.items():
-            dist_obj.set_doc(docvector)
-            dist = dist_obj.execute()
-            ranked_docs.append((docid, dist))
-        ranked_docs.sort(key=lambda x: x[1], reverse=True)
-        return ranked_docs
 
 
 

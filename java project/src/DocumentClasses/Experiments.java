@@ -48,10 +48,10 @@ public class Experiments {
         /***** Algorithm scores to beat *****/
 
         // Instantiate and fill out all variables
-        documents = new VectorCollection("/Users/Eric/Desktop/Thesis/projects/java project/src/labs/documents.txt",
+        documents = new VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400",
                 VectorCollection.VectorType.DOCUMENTS,
                 false, 2);
-        queries = new VectorCollection("/Users/Eric/Desktop/Thesis/projects/java project/src/labs/queries.txt",
+        queries = new VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry",
                 VectorCollection.VectorType.QUIRIES,
                 false, 2);
         humanJudgement = CompareDocsUtil.readHumanJudgement("/Users/Eric/Desktop/Thesis/projects/java project/src/labs/human_judgement.txt", 1, 3);
@@ -77,7 +77,7 @@ public class Experiments {
         numQueries = 225;
 
         // Compute Distance Scores
-        computeOkapiScores();
+   //     computeOkapiScores();
         computeCosineScores();
 //        compute_2Constraint_Scores();
 //        compute_function1_BestPath_Scores();
@@ -396,6 +396,7 @@ public class Experiments {
         }
         System.out.println("Cosine MAP = " + CompareDocsUtil.computeMAP(humanJudgement, cosineDocumentResults, numQueries));
         System.out.println(cosineDocumentResults.get(1));
+        System.out.println(cosineDocumentResults.get(2));
     }
 
     /**
