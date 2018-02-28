@@ -20,6 +20,7 @@ class VectorType(Enum):
 class VectorCollection:
     # Set of stop words
     #stop_words = set(stopwords.words('english'))
+
     stop_words = {"a", "about", "above", "all", "along",
             "also", "although", "am", "an", "and", "any", "are", "aren't", "as", "at",
             "be", "because", "been", "but", "by", "can", "cannot", "could", "couldn't",
@@ -38,7 +39,7 @@ class VectorCollection:
             "we", "were", "what", "when", "where", "whereby", "wherein", "whether",
             "which", "while", "who", "whom", "whose", "why", "with", "without",
             "would", "you", "your", "yours", "yes"}
-
+    
     def __init__(self, file_path, stop_words_on, stemming_on, min_word_len, vector_type):
         # Maps {doc id : TextVector}
         self.id_to_textvector = {}
@@ -50,7 +51,7 @@ class VectorCollection:
         if vector_type == VectorType.DOCUMENTS:
             self.parse_documents(file_path, stop_words_on, stemming_on, min_word_len)
         elif vector_type == VectorType.QUERIES:
-            self.parse_documents(file_path, stop_words_on, stemming_on, min_word_len)
+            self.parse_queries(file_path, stop_words_on, stemming_on, min_word_len)
 
     def __repr__(self):
         s = 'id_to_textvector:\n\tKEY\t\tVALUE\n'
@@ -95,7 +96,7 @@ class VectorCollection:
                     inside_W = True
                     cur_doc_idx = 0 # Reset for next document
                 elif inside_W: # In the body of the Document
-                    for term in line.split():
+                    for term in re.split("[^a-zA-Z]+", line):
                         term = re.sub(r'[^\w\s]', '', term.lower()) # Remove punctuation
                         if len(term) >= min_word_len: # Satisfies min length
                             if stemming_on:
@@ -109,31 +110,31 @@ class VectorCollection:
 
     def parse_queries(self, file_path, stop_words_on, stemming_on, min_word_len):
         with open(file_path) as file:
-            cur_doc_id = -1 # Current Doc Id
-            cur_doc_idx = 0 # Current Doc Idx
+            cur_query_id = 0 # Current Query Id
+            cur_query_idx = 0 # Current Query Idx
             inside_W = False
             for line in file:
                 if '.I' in line: # Contains Id
-                    cur_doc_id = int(re.sub(r'\s+', '', re.sub(r".I", '', line)))  # Remove .I and spaces
+                    cur_query_id += 1
                     textvector = QueryVector()
-                    textvector.add_id(cur_doc_id)
-                    self.id_to_textvector[cur_doc_id] = textvector
+                    textvector.add_id(cur_query_id)
+                    self.id_to_textvector[cur_query_id] = textvector
                     inside_W = False
                 elif '.W' in line:
                     inside_W = True
-                    cur_doc_idx = 0 # Reset for next document
+                    cur_query_idx = 0 # Reset for next document
                 elif inside_W: # In the body of the Document
-                    for term in line.split():
+                    for term in re.split("[^a-zA-Z]+", line):
                         term = re.sub(r'[^\w\s]', '', term.lower()) # Remove punctuation
                         if len(term) >= min_word_len: # Satisfies min length
                             if stemming_on:
                                 term = self.stemmer.stem(term)
                             # If (stop words not on and term is not a stop word) or (stop words on)
                             if (not stop_words_on and term not in self.stop_words) or stop_words_on:
-                                self.id_to_textvector[cur_doc_id].add_term(term) # Add term to term_to_freq
+                                self.id_to_textvector[cur_query_id].add_term(term) # Add term to term_to_freq
                                 # Add term to inverted index
-                                self.add_to_inverted_index(cur_doc_id, term, cur_doc_idx)
-                                cur_doc_idx += 1
+                                self.add_to_inverted_index(cur_query_idx, term, cur_query_idx)
+                                cur_query_idx += 1
 
 # __________________Normalization Methods__________________
 
@@ -163,7 +164,7 @@ class VectorCollection:
     # dist_obj - A object that holds a distance function
     # doc_limit - An upper limit for the number of document ids returned per query
     # returns a map {Query id : [Doc Ids]}
-    def find_closest_docs(self, documents, dist_obj, doc_limit = sys.maxsize) -> map:
+    def find_closest_docs(self, documents, dist_obj, doc_limit=sys.maxsize) -> map:
         results = {}
         for id, qry_vector in self.id_to_textvector.items():
             dist_obj.set_query(qry_vector)

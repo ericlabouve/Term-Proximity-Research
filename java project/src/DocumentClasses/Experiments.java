@@ -51,10 +51,16 @@ public class Experiments {
         documents = new VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400",
                 VectorCollection.VectorType.DOCUMENTS,
                 false, 2);
+    //    documents = new VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents2.txt",
+    //            VectorCollection.VectorType.DOCUMENTS,
+    //            false, 2);
         queries = new VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry",
                 VectorCollection.VectorType.QUIRIES,
                 false, 2);
-        humanJudgement = CompareDocsUtil.readHumanJudgement("/Users/Eric/Desktop/Thesis/projects/java project/src/labs/human_judgement.txt", 1, 3);
+    //    queries = new VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/queries2.txt",
+    //            VectorCollection.VectorType.QUIRIES,
+    //            false, 2);
+        humanJudgement = CompareDocsUtil.readHumanJudgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3);
         cosineDocumentResults = new HashMap<Integer, ArrayList<Integer>>();
         okapiDocumentResults = new HashMap<Integer, ArrayList<Integer>>();
 
@@ -396,7 +402,6 @@ public class Experiments {
         }
         System.out.println("Cosine MAP = " + CompareDocsUtil.computeMAP(humanJudgement, cosineDocumentResults, numQueries));
         System.out.println(cosineDocumentResults.get(1));
-        System.out.println(cosineDocumentResults.get(2));
     }
 
     /**

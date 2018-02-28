@@ -9,15 +9,16 @@ import sys
 # results - A map containing relevant documents for each query computed using find_closest_docs
 # relevant - A map containing human judgement computed from read_human_judgement
 # query_limit - An upper limit for the number of queries to process
-def compute_avg_map(results: map, relevant: map, query_limit = sys.maxsize) -> float:
+def compute_avg_map(results: map, relevant: map, query_limit=sys.maxsize) -> float:
     map_sum = 0
     num_computed = 0
     for qry_id, results_list in results.items():
         # If we have not reached a user defined limit and there exist relevant ids for this query
-        if num_computed < query_limit and len(relevant[qry_id]) > 0:
-            relevant_list = relevant[qry_id]
-            map_sum += compute_map(results_list, relevant_list)
-            num_computed += 1
+        if num_computed < query_limit:
+            if len(relevant[qry_id]) > 0:
+                relevant_list = relevant[qry_id]
+                map_sum += compute_map(results_list, relevant_list)
+                num_computed += 1
         else:
             break
     return map_sum / num_computed
@@ -62,7 +63,7 @@ def read_human_judgement(file_path, best_score, worst_score):
             doc_num = int(items[1])
             degree_rel = int(items[2])
             # Check if degree of relevance is in our bounds
-            if degree_rel >= best_score and degree_rel <= worst_score:
+            if best_score <= degree_rel <= worst_score:
                 relevant_docs[query_num].append(doc_num)
     return relevant_docs
 
