@@ -3,7 +3,7 @@
 
 
 from VectorCollection import VectorCollection, VectorType
-from DistanceFunctions import CosineFunction
+from DistanceFunctions import CosineFunction, OkapiFunction, OkapiModFunction
 import ScoringFunctions as score_fs
 import json
 
@@ -16,11 +16,11 @@ if __name__ == "__main__":
     label_to_id_json = json.load(open(json_base_dir + 'labelToId.json'))
     wf_vertex_db_json = json.load(open(json_base_dir + 'wfVertexDb.json'))
 
-    docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", False, False, 2, VectorType.DOCUMENTS)
-    #docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents2.txt", False, False, 2, VectorType.DOCUMENTS)
+    docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS)
+    #docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents2.txt", VectorType.DOCUMENTS)
 
-    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", False, False, 2, VectorType.QUERIES)
-    #qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/queries2.txt", False, False, 2, VectorType.QUERIES)
+    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry",VectorType.QUERIES)
+    #qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/queries2.txt", VectorType.QUERIES)
 
     relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
 
@@ -28,11 +28,18 @@ if __name__ == "__main__":
     docs.normalize(docs)
     qrys.normalize(docs)
 
-    results = qrys.find_closest_docs(docs, CosineFunction(docs), doc_limit=20)
-    avg_map = score_fs.compute_avg_map(results, relevant_docs, query_limit=225)
-    print(avg_map)
+    query_limit = 225
 
-    java_results = [13, 184, 12, 51, 486, 1268, 327, 435, 746, 875, 665, 686, 359, 878, 494, 14, 1144, 1186, 332, 154]
-    print(score_fs.compute_map(java_results, relevant_docs[1]))
-    print(score_fs.compute_map(results[1], relevant_docs[1]))
+#    cosine_results = qrys.find_closest_docs(docs, CosineFunction(docs), doc_limit=20)
+#    cosine_avg_map = score_fs.compute_avg_map(cosine_results, relevant_docs, query_limit=225)
+#    print(cosine_avg_map)
+
+    okapi_results = qrys.find_closest_docs(docs, OkapiFunction(docs), doc_limit=20, query_limit=query_limit)
+    okapi_avg_map = score_fs.compute_avg_map(okapi_results, relevant_docs)
+    print(okapi_avg_map)
+
+    okapi_mod_results = qrys.find_closest_docs(docs, OkapiModFunction(docs, is_early=True), doc_limit=20, query_limit=query_limit)
+    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
+    print(okapi_mod_avg_map)
+
 

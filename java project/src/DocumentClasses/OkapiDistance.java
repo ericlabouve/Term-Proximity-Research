@@ -64,6 +64,7 @@ public class OkapiDistance implements DocumentDistance {
             double product = firstTerm * secondTerm * thirdTerm;
             sum += product;
         }
+
         return sum;
     }
 

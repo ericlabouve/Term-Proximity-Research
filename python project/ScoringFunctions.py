@@ -5,6 +5,8 @@ from collections import defaultdict
 import sys
 
 
+# ______________________ Mean Average Precision Functions ___________________
+
 # Computes the average for ALL MAP scores given in the results map parameter
 # results - A map containing relevant documents for each query computed using find_closest_docs
 # relevant - A map containing human judgement computed from read_human_judgement
@@ -49,6 +51,8 @@ def intersection(l1: list, l2: list) -> set:
     keys_v2 = set(l2)
     return keys_v1 & keys_v2  # items that v1 and v2 share
 
+
+# ______________________ I/O Functions ___________________
 
 # Returns a mapping from {Query Ids : [Relevant Doc Ids]}
 # path - File path

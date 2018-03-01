@@ -39,8 +39,8 @@ class VectorCollection:
             "we", "were", "what", "when", "where", "whereby", "wherein", "whether",
             "which", "while", "who", "whom", "whose", "why", "with", "without",
             "would", "you", "your", "yours", "yes"}
-    
-    def __init__(self, file_path, stop_words_on, stemming_on, min_word_len, vector_type):
+
+    def __init__(self, file_path, vector_type, stop_words_on=False, stemming_on=False, min_word_len=2):
         # Maps {doc id : TextVector}
         self.id_to_textvector = {}
         # Maps {string term : {doc id : Posting}}
@@ -163,17 +163,38 @@ class VectorCollection:
     # documents - Intended to be the Documents VectorCollection
     # dist_obj - A object that holds a distance function
     # doc_limit - An upper limit for the number of document ids returned per query
+    # query_limit - An upper limit for the number of queries to process
     # returns a map {Query id : [Doc Ids]}
-    def find_closest_docs(self, documents, dist_obj, doc_limit=sys.maxsize) -> map:
+    def find_closest_docs(self, documents, dist_obj, doc_limit=sys.maxsize, query_limit=20) -> map:
         results = {}
-        for id, qry_vector in self.id_to_textvector.items():
+        computed = 0
+        for qry_id, qry_vector in self.id_to_textvector.items():
             dist_obj.set_query(qry_vector)
             ranked_docs = dist_fs.find_closest_docs(documents, dist_obj, doc_limit=doc_limit)
-            results[id] = ranked_docs
+            results[qry_id] = ranked_docs
+            computed += 1
+            sys.stdout.write("Q:" + str(qry_id) + " ")
+            sys.stdout.flush()
+            if computed == query_limit:
+                print()
+                break
         return results
 
+# __________________Inverted Index Methods__________________
 
+    # Returns the document frequency for a term
+    def get_doc_freq(self, term: str) -> int:
+        return len(self.term_to_postings[term])
 
+    # Returns a Posting for a specified term and document
+    def get_term_posting_for_doc(self, term: str, doc_id: int) -> Posting:
+        # Check if term exists in inverted index
+        if term in self.term_to_postings:
+            doc_postings = self.term_to_postings[term]
+            # Check if document contains term
+            if doc_id in doc_postings:
+                return doc_postings[doc_id]
+        return None
 
 
 

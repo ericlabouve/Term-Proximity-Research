@@ -80,11 +80,11 @@ public class Experiments {
         queries.normalize(documents);
 
         generator = new GraphGenerator();
-        numQueries = 225;
+        numQueries = 20;
 
         // Compute Distance Scores
-   //     computeOkapiScores();
-        computeCosineScores();
+        computeOkapiScores();
+   //     computeCosineScores();
 //        compute_2Constraint_Scores();
 //        compute_function1_BestPath_Scores();
 //        compute_function1_BestPath_SumNodes_Scores();

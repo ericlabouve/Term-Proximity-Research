@@ -20,6 +20,13 @@ class TextVector:
             s += str(key) + ':' + str(value) + ', '
         return s + '}>'
 
+    # Returns the number of terms in this textvector
+    def __len__(self):
+        term_count = 0
+        for term, freq in self.term_to_freq.items():
+            term_count += freq
+        return term_count
+
     def add_id(self, id):
         self.id = id
 
@@ -35,8 +42,6 @@ class TextVector:
             if freq > highest:
                 highest = freq
         return highest
-
-
 
 
 
