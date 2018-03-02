@@ -112,7 +112,7 @@ class OkapiFunction(DistanceFunction):
 
 
 class OkapiModFunction(DistanceFunction):
-    def __init__(self, vector_collection: VectorCollection, is_early=True):
+    def __init__(self, vector_collection: VectorCollection, is_early=False):
         super().__init__(vector_collection)
         self.avdl = compute_avdl(vector_collection)
         self.num_docs = len(vector_collection.id_to_textvector)

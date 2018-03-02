@@ -4,18 +4,21 @@
 
 from VectorCollection import VectorCollection, VectorType
 from DistanceFunctions import CosineFunction, OkapiFunction, OkapiModFunction
+from WordNet import WordNet
 import ScoringFunctions as score_fs
-import json
+import nltk
+
 
 if __name__ == "__main__":
+    qry = "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed car."
+    text = nltk.word_tokenize(qry)
+    tagged = nltk.pos_tag(text)
 
-    json_base_dir = '/Users/Eric/Desktop/Thesis/programs/java/json/'
-    adj_list_json = json.load(open(json_base_dir + 'adjList.json'))
-    edge_list_json = json.load(open(json_base_dir + 'edgeList.json'))
-    id_to_label_json = json.load(open(json_base_dir + 'idToLabel.json'))
-    label_to_id_json = json.load(open(json_base_dir + 'labelToId.json'))
-    wf_vertex_db_json = json.load(open(json_base_dir + 'wfVertexDb.json'))
+    wn = WordNet()
+    synonyms = wn.get_syns(tagged[14])
 
+
+if __name__ == "__main2__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS)
     #docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents2.txt", VectorType.DOCUMENTS)
 
@@ -28,11 +31,11 @@ if __name__ == "__main__":
     docs.normalize(docs)
     qrys.normalize(docs)
 
-    query_limit = 225
+    query_limit = 20
 
-#    cosine_results = qrys.find_closest_docs(docs, CosineFunction(docs), doc_limit=20)
-#    cosine_avg_map = score_fs.compute_avg_map(cosine_results, relevant_docs, query_limit=225)
-#    print(cosine_avg_map)
+    cosine_results = qrys.find_closest_docs(docs, CosineFunction(docs), doc_limit=20)
+    cosine_avg_map = score_fs.compute_avg_map(cosine_results, relevant_docs, query_limit=225)
+    print(cosine_avg_map)
 
     okapi_results = qrys.find_closest_docs(docs, OkapiFunction(docs), doc_limit=20, query_limit=query_limit)
     okapi_avg_map = score_fs.compute_avg_map(okapi_results, relevant_docs)
