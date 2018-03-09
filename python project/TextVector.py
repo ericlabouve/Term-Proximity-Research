@@ -9,9 +9,15 @@ class TextVector:
     def __init__(self):
         # Maps {string term : int frequency}
         self.term_to_freq = defaultdict(int)
+        # Maps {string term : int frequency}
+        self.normalized_term_to_freq = {}
+        # Exact copy of the original text vector
         self.raw_text = ''
+        # List of all filtered text vector terms
+        self.terms = []
         self.id = 0
-        self.length = None  # The number of terms in this textvector (lazy loaded)
+        # The number of terms in this textvector (loaded on request)
+        self.length = None
 
     def __repr__(self):
         s = ''

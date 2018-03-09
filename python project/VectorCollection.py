@@ -85,12 +85,37 @@ class VectorCollection:
         term_postings[doc_id].add_offset(term_offset)
         term_postings[doc_id].add_sentence(sentence)
 
-    def parse_documents(self, file_path, stop_words_on, stemming_on, min_word_len):
-        with open(file_path) as file:
-            cur_doc_id = -1 # Current Doc Id
-            cur_doc_idx = 0 # Current Doc Idx
+    # Fill out inverted index and term frequency table
+    # Called from inside parse_documents and parse_queries
+    def evaluate_vectors(self, min_word_len: int, stemming_on: bool, stop_words_on: bool):
+        # For each text vector
+        for textvector_id, textvector in self.id_to_textvector.items():
+            cur_offset = 0  # Offset of the term inside the text vector
             sentence_num = 0
             next_sentence = False
+            # Loop through each vector term
+            for term in re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text):
+                if '.' in term:
+                    next_sentence = True
+                term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
+                if len(term) >= min_word_len:  # Satisfies min length
+                    if stemming_on:
+                        term = self.stemmer.stem(term)
+                    # If (stop words not on and term is not a stop word) or (stop words on)
+                    if (not stop_words_on and term not in self.stop_words) or stop_words_on:
+                        textvector.add_term(term)  # Add term to term_to_freq
+                        textvector.terms.append(term)
+                        # Add term to inverted index
+                        self.add_to_inverted_index(textvector_id, term, cur_offset, sentence_num)
+                        cur_offset += 1
+                if next_sentence:
+                    next_sentence = False
+                    sentence_num += 1
+
+    def parse_documents(self, file_path: str, stop_words_on: bool, stemming_on: bool, min_word_len: int):
+        # Read vectors into memory
+        with open(file_path) as file:
+            cur_doc_id = -1  # Current Doc Id
             inside_W = False
             for line in file:
                 if '.I' in line: # Contains Id
@@ -101,37 +126,19 @@ class VectorCollection:
                     inside_W = False
                 elif '.W' in line:
                     inside_W = True
-                    # Reset for next document
-                    cur_doc_idx = 0
-                    sentence_num = 0
-                elif inside_W: # In the body of the Document
-                    for term in re.split("[^a-zA-Z.]+", line):
-                        # .'s indicate end of sentence unless it is surrounded by numbers
-                        if '.' in term:
-                            next_sentence = True
-                        term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
-                        if len(term) >= min_word_len:  # Satisfies min length
-                            if stemming_on:
-                                term = self.stemmer.stem(term)
-                            # If (stop words not on and term is not a stop word) or (stop words on)
-                            if (not stop_words_on and term not in self.stop_words) or stop_words_on:
-                                self.id_to_textvector[cur_doc_id].add_term(term) # Add term to term_to_freq
-                                # Add term to inverted index
-                                self.add_to_inverted_index(cur_doc_id, term, cur_doc_idx, sentence_num)
-                                cur_doc_idx += 1
-                        if next_sentence:
-                            next_sentence = False
-                            sentence_num += 1
+                elif inside_W:  # In the body of the Document
+                    self.id_to_textvector[cur_doc_id].raw_text += re.sub('\n', ' ', line)
 
-    def parse_queries(self, file_path, stop_words_on, stemming_on, min_word_len):
+        # Fill out inverted index and term frequency table
+        self.evaluate_vectors(min_word_len, stemming_on, stop_words_on)
+
+    def parse_queries(self, file_path: str, stop_words_on: bool, stemming_on: bool, min_word_len: int):
+        # Read vectors into memory
         with open(file_path) as file:
-            cur_query_id = 0 # Current Query Id
-            cur_query_idx = 0 # Current Query Idx
-            sentence_num = 0
-            next_sentence = False
+            cur_query_id = 0  # Current Query Id
             inside_W = False
             for line in file:
-                if '.I' in line: # Contains Id
+                if '.I' in line:  # Contains Id
                     cur_query_id += 1
                     textvector = QueryVector()
                     textvector.add_id(cur_query_id)
@@ -139,27 +146,11 @@ class VectorCollection:
                     inside_W = False
                 elif '.W' in line:
                     inside_W = True
-                    # Reset for next document
-                    cur_query_idx = 0
-                    sentence_num = 0
-                elif inside_W: # In the body of the Document
-                    for term in re.split("[^a-zA-Z.]+", line):
-                        if '.' in term:
-                            next_sentence = True
-                        term = re.sub(r'[^\w\s]', '', term.lower()) # Remove punctuation
-                        if len(term) >= min_word_len: # Satisfies min length
-                            if stemming_on:
-                                term = self.stemmer.stem(term)
-                            # If (stop words not on and term is not a stop word) or (stop words on)
-                            if (not stop_words_on and term not in self.stop_words) or stop_words_on:
-                                self.id_to_textvector[cur_query_id].add_term(term) # Add term to term_to_freq
-                                self.id_to_textvector[cur_query_id].terms.append(term)
-                                # Add term to inverted index
-                                self.add_to_inverted_index(cur_query_idx, term, cur_query_idx, sentence_num)
-                                cur_query_idx += 1
-                        if next_sentence:
-                            next_sentence = False
-                            sentence_num += 1
+                elif inside_W:  # In the body of the Document
+                    self.id_to_textvector[cur_query_id].raw_text += re.sub('\n', ' ', line)
+
+        # Fill out inverted index and term frequency table
+        self.evaluate_vectors(min_word_len, stemming_on, stop_words_on)
 
 # __________________Normalization Methods__________________
 
@@ -169,14 +160,8 @@ class VectorCollection:
         for id, textvector in self.id_to_textvector.items():
             textvector.normalize(vector_collection)
 
-    # Returns the number of vectors that contains the term
-    def get_doc_freq(self, term):
-        if term in self.term_to_postings:
-            return len(self.term_to_postings[term])
-        return 0
-
     # Returns the number of vectors in the collection
-    def get_num_vecotrs(self):
+    def get_num_vectors(self):
         return len(self.id_to_textvector)
 
 # __________________Distance Methods__________________
@@ -207,9 +192,11 @@ class VectorCollection:
 
 # __________________Inverted Index Methods__________________
 
-    # Returns the document frequency for a term
-    def get_doc_freq(self, term: str) -> int:
-        return len(self.term_to_postings[term])
+    # Returns the number of vectors that contains the term
+    def get_doc_freq(self, term):
+        if term in self.term_to_postings:
+            return len(self.term_to_postings[term])
+        return 0
 
     # Returns a Posting for a specified term and document
     def get_term_posting_for_doc(self, term: str, doc_id: int) -> Posting:
@@ -222,24 +209,82 @@ class VectorCollection:
         return None
 
 
+    # def parse_queries(self, file_path: str, stop_words_on: bool, stemming_on: bool, min_word_len: int):
+    #     with open(file_path) as file:
+    #         cur_query_id = 0 # Current Query Id
+    #         cur_query_idx = 0 # Current Query Idx
+    #         sentence_num = 0
+    #         next_sentence = False
+    #         inside_W = False
+    #         for line in file:
+    #             if '.I' in line: # Contains Id
+    #                 cur_query_id += 1
+    #                 textvector = QueryVector()
+    #                 textvector.add_id(cur_query_id)
+    #                 self.id_to_textvector[cur_query_id] = textvector
+    #                 inside_W = False
+    #             elif '.W' in line:
+    #                 inside_W = True
+    #                 # Reset for next document
+    #                 cur_query_idx = 0
+    #                 sentence_num = 0
+    #             elif inside_W:  # In the body of the Document
+    #                 self.id_to_textvector[cur_query_id].raw_text += re.sub('\n', ' ', line)
+    #                 for term in re.split("[^a-zA-Z.]+", line):
+    #                     if '.' in term:
+    #                         next_sentence = True
+    #                     term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
+    #                     if len(term) >= min_word_len: # Satisfies min length
+    #                         if stemming_on:
+    #                             term = self.stemmer.stem(term)
+    #                         # If (stop words not on and term is not a stop word) or (stop words on)
+    #                         if (not stop_words_on and term not in self.stop_words) or stop_words_on:
+    #                             self.id_to_textvector[cur_query_id].add_term(term)  # Add term to term_to_freq
+    #                             self.id_to_textvector[cur_query_id].terms.append(term)
+    #                             # Add term to inverted index
+    #                             self.add_to_inverted_index(cur_query_id, term, cur_query_idx, sentence_num)
+    #                             cur_query_idx += 1
+    #                     if next_sentence:
+    #                         next_sentence = False
+    #                         sentence_num += 1
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # def parse_documents(self, file_path: str, stop_words_on: bool, stemming_on: bool, min_word_len: int):
+    #     with open(file_path) as file:
+    #         cur_doc_id = -1 # Current Doc Id
+    #         cur_doc_idx = 0 # Current Doc Idx
+    #         sentence_num = 0
+    #         next_sentence = False
+    #         inside_W = False
+    #         for line in file:
+    #             if '.I' in line: # Contains Id
+    #                 cur_doc_id = int(re.sub(r'\s+', '', re.sub(r".I", '', line)))  # Remove .I and spaces
+    #                 textvector = DocumentVector()
+    #                 textvector.add_id(cur_doc_id)
+    #                 self.id_to_textvector[cur_doc_id] = textvector
+    #                 inside_W = False
+    #             elif '.W' in line:
+    #                 inside_W = True
+    #                 # Reset for next document
+    #                 cur_doc_idx = 0
+    #                 sentence_num = 0
+    #             elif inside_W:  # In the body of the Document
+    #                 self.id_to_textvector[cur_doc_id].raw_text += re.sub('\n', ' ', line)
+    #                 for term in re.split("[^a-zA-Z.]+", line):
+    #                     # .'s indicate end of sentence unless it is surrounded by numbers
+    #                     if '.' in term:
+    #                         next_sentence = True
+    #                     term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
+    #                     if len(term) >= min_word_len:  # Satisfies min length
+    #                         if stemming_on:
+    #                             term = self.stemmer.stem(term)
+    #                         # If (stop words not on and term is not a stop word) or (stop words on)
+    #                         if (not stop_words_on and term not in self.stop_words) or stop_words_on:
+    #                             self.id_to_textvector[cur_doc_id].add_term(term) # Add term to term_to_freq
+    #                             # Add term to inverted index
+    #                             self.add_to_inverted_index(cur_doc_id, term, cur_doc_idx, sentence_num)
+    #                             cur_doc_idx += 1
+    #                     if next_sentence:
+    #                         next_sentence = False
+    #                         sentence_num += 1
 
 

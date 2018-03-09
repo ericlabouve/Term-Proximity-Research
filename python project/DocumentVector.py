@@ -9,7 +9,6 @@ class DocumentVector(TextVector):
 
     def __init__(self):
         super().__init__()
-        self.normalized_term_to_freq = {}
 
     def __repr__(self):
         return super().__repr__()
@@ -28,6 +27,6 @@ class DocumentVector(TextVector):
             if df == 0:
                 idf = 0
             else:
-                idf = math.log2(vector_collection.get_num_vecotrs() / df)
+                idf = math.log2(vector_collection.get_num_vectors() / df)
             w = tf * idf
             self.normalized_term_to_freq[term] = w
