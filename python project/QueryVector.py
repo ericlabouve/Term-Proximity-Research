@@ -10,6 +10,7 @@ class QueryVector(TextVector):
     def __init__(self):
         super().__init__()
         self.normalized_term_to_freq = {}
+        self.terms = [] # Copy of query terms in order in which they appear
 
     def __repr__(self):
         return super().__repr__()

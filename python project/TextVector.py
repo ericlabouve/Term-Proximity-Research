@@ -11,7 +11,7 @@ class TextVector:
         self.term_to_freq = defaultdict(int)
         self.raw_text = ''
         self.id = 0
-        pass
+        self.length = None
 
     def __repr__(self):
         s = ''
@@ -22,6 +22,8 @@ class TextVector:
 
     # Returns the number of terms in this textvector
     def __len__(self):
+        if self.length is not None:
+            return self.length
         term_count = 0
         for term, freq in self.term_to_freq.items():
             term_count += freq

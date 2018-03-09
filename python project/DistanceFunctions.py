@@ -25,7 +25,7 @@ class DistanceFunction:
 # documents is a VectorCollection
 # dist_obj is an object that holds a distance function
 # doc_limit - An upper limit for the number of document ids returned per query
-def find_closest_docs(documents: VectorCollection, dist_obj: DistanceFunction, doc_limit=sys.maxsize) -> list:
+def find_closest_docs(documents: VectorCollection, dist_obj: DistanceFunction, doc_limit=20) -> list:
     ranked_docs = []  # Holds (doc id, distance)
     for docid, docvector in documents.id_to_textvector.items():
         dist_obj.set_doc(docvector)
@@ -112,19 +112,26 @@ class OkapiFunction(DistanceFunction):
 
 
 class OkapiModFunction(DistanceFunction):
-    def __init__(self, vector_collection: VectorCollection, is_early=False):
+    def __init__(self, vector_collection: VectorCollection,
+                 is_early=False, is_close_pairs=False):
         super().__init__(vector_collection)
+        # Okapi variables
         self.avdl = compute_avdl(vector_collection)
         self.num_docs = len(vector_collection.id_to_textvector)
         self.k1 = 1.2
         self.k2 = 100
         self.b = 0.75
+        # is_early variables
         self.is_early = is_early
+        # last_term variables
+        self.is_close_pairs = is_close_pairs
+        self.last_term = None
 
     # is_early - Extra boost to terms that appear in the beginning of the document
     def execute(self) -> float:
         sum = 0
-        for term, weight in self.query.term_to_freq.items():
+        # Traverse query terms in order of how they appear
+        for term in self.query.terms:
             dfi = self.vector_collection.get_doc_freq(term)
             fij = self.doc.term_to_freq[term]
             dlj = len(self.doc)
@@ -136,6 +143,10 @@ class OkapiModFunction(DistanceFunction):
 
             if self.is_early:
                 product *= self.early_term(term)
+
+            if self.is_close_pairs:
+                product += self.close_pairs(term)
+                self.last_term = term
 
             sum += product
         return sum
@@ -149,3 +160,47 @@ class OkapiModFunction(DistanceFunction):
         posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
         term_loc = dl if posting is None else posting.offsets[0]
         return (const * dl - term_loc) / dl
+
+    # Does not give good results. Gives too much weight to adjacent common words
+    #   ex: 'high' 'speed', which detracts from the main subject of the query
+    # Gives an extra boost to adjacent query terms that are near each other
+    # in the document. Idea is to give nonlinear reward for terms that are close
+    # Evaluate only the closest pair of terms between the two postings.
+    # Range of values: [2, 0]
+    # boost = 2 / min_distance
+    def close_pairs(self, term):
+        if self.last_term is None:
+            self.last_term = term
+            return 1
+        posting1 = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+        posting2 = self.vector_collection.get_term_posting_for_doc(self.last_term, self.doc.id)
+        # Determine if both terms appear in the document
+        if posting1 is None or posting2 is None:
+            return 1
+        # Find the two closest pairs from the two sorted arrays
+        ar1 = posting1.offsets
+        ar2 = posting2.offsets
+        i = j = 0
+        min_dif = sys.maxsize
+        while i < len(ar1) and j < len(ar2):
+            dif = abs(ar1[i] - ar2[j])
+            min_dif = min(min_dif, dif)
+            if ar1[i] > ar2[j]:
+                j += 1
+            else:
+                i += 1
+        if i < len(ar1):
+            j -= 1
+            while i < len(ar1):
+                dif = abs(ar1[i] - ar2[j])
+                min_dif = min(min_dif, dif)
+                i += 1
+        else:
+            i -= 1
+            while j < len(ar2):
+                dif = abs(ar1[i] - ar2[j])
+                min_dif = min(min_dif, dif)
+                j += 1
+        result = 2 / min_dif
+        return result
+

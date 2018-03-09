@@ -1,6 +1,6 @@
 from nltk.corpus import wordnet as wn
-import json
-import nltk
+from collections import defaultdict
+import json, random
 
 
 class WordNet:
@@ -12,7 +12,147 @@ class WordNet:
                   'VBP': 'v', 'VBZ': 'v'}
 
     def __init__(self):
-        pass
+        self.json_base_dir = '/Users/Eric/Desktop/Thesis/programs/java/json/'
+        self.adj_list_json = json.load(open(self.json_base_dir + 'adjList.json'))
+        self.edge_list_json = json.load(open(self.json_base_dir + 'edgeList.json'))
+        self.id_to_label_json = json.load(open(self.json_base_dir + 'idToLabel.json'))
+        self.label_to_id_json = json.load(open(self.json_base_dir + 'labelToId.json'))
+        self.wf_vertex_db_json = json.load(open(self.json_base_dir + 'wfVertexDb.json'))
+
+    # Computes the similarity between two terms as the probability of reaching term2 from term1 and reaching
+    # term1 from term1. The equation is: [P(term1 | term2) + P(term1 | term2)] / 2
+    # P(a | b) is how many times in our iterations do we come across term a when starting at term b
+    def random_walk(self, term1: str, term2: str, depth=5, iterations=1000) -> float:
+        assert depth > 0 and iterations > 0
+
+        def _random_walk(_term1: str, _term2: str) -> float:
+            freq = 0  # How many times we discover term1
+            # Assign a probability of zero if one of the terms is not in WordNet
+            if _term1 not in self.label_to_id_json or _term2 not in self.label_to_id_json:
+                return 0
+            # Assign a probability of one if the two terms are the same
+            if _term1 == _term2:
+                return 1
+            term1_id = self.label_to_id_json[_term1]
+            # Run simulation iterations number of times
+            for i in range(iterations):
+                marked_node_ids = []
+                sense_id = self.label_to_id_json[_term2]  # Current node in WordNet
+                for j in range(depth):
+                    # Get adjacent sense ids
+                    all_adj_sense_ids = self.adj_list_json[str(sense_id)]
+                    # Remove ids that have already been marked
+                    adj_sense_ids = [x for x in all_adj_sense_ids if x not in marked_node_ids]
+                    # Mark sense ids as seen
+                    marked_node_ids += adj_sense_ids
+                    # Get edge ids for unseen adj senses ------- CORRECT ORDER? -------
+                    edge_ids = [str(sense_id) + '-' + str(x) for x in adj_sense_ids]  # From sense to adj_sense
+                    # Get edge weights (similarity) between sense and adj_sense
+                    edge_weights = [float(self.edge_list_json[x]) for x in edge_ids]
+                    # Normalize all edge weights to be values between 0 and 1
+                    sum = 0
+                    for x in edge_weights:
+                        sum += x
+                    edge_weights_norm = [x/sum for x in edge_weights]
+                    # Compute a random value between 0 and 1
+                    val = random.uniform(0, 1)
+                    # Determine which edge to traverse. Edge weights are traversal probabilities
+                    for node_id, prob in zip(adj_sense_ids, edge_weights_norm):
+                        val -= prob
+                        if val <= 0:
+                            sense_id = node_id
+                            break
+                    if sense_id == term1_id:
+                        freq += 1
+            return freq / iterations
+        return (_random_walk(term1, term2) + _random_walk(term2, term1)) / 2
+
+    # Obtains senses that rank highly when a random walk is computed
+    def get_sim_terms_rw(self, term: str, depth=2, str_len=1, iterations=1000) -> list:
+        assert depth > 0 and str_len > 0 and iterations > 0
+        freq = defaultdict(int)  # How many times we discover a sense
+        # Assign a probability of zero if one of the terms is not in WordNet
+        if term not in self.label_to_id_json:
+            return []
+        term_id = self.label_to_id_json[term]
+        # Run simulation iterations number of times
+        for i in range(iterations):
+            marked_node_ids = [term_id]
+            sense_id = term_id  # Current node in WordNet
+            for j in range(depth):
+                # Get adjacent sense ids
+                all_adj_sense_ids = self.adj_list_json[str(sense_id)]
+                # Remove ids that have already been marked
+                adj_sense_ids = [x for x in all_adj_sense_ids if x not in marked_node_ids]
+                # Mark sense ids as seen
+                marked_node_ids += adj_sense_ids
+                # Get edge ids for unseen adj senses ------- CORRECT ORDER? -------
+                edge_ids = [str(sense_id) + '-' + str(x) for x in adj_sense_ids]  # From sense to adj_sense
+                # Get edge weights (similarity) between sense and adj_sense
+                edge_weights = [float(self.edge_list_json[x]) for x in edge_ids]
+                # Normalize all edge weights to be values between 0 and 1
+                sum = 0
+                for x in edge_weights:
+                    sum += x
+                edge_weights_norm = [x / sum for x in edge_weights]
+                # Compute a random value between 0 and 1
+                val = random.uniform(0, 1)
+                # Determine which edge to traverse. Edge weights are traversal probabilities
+                for node_id, prob in zip(adj_sense_ids, edge_weights_norm):
+                    val -= prob
+                    if val <= 0:
+                        sense_id = node_id
+                        break
+                # Record frequency of node we land on
+                freq[sense_id] += 1
+        sim_terms = []
+        for sense_id, frq in freq.items():
+            sense = self.id_to_label_json[str(sense_id)]
+            if len(sense.split()) <= str_len:
+                sim_terms.append((sense, frq / iterations))
+        sim_terms.sort(key=lambda x: x[1], reverse=True)
+        return sim_terms
+
+    # Obtains all senses for the given term in the WordNet graph
+    # depth is how many edges to traverse away from term and must be at least 1
+    # Returns an array of senses with their rough similarities to the original term
+    def get_sim_terms(self, term: str, depth=2, str_len=1):
+        assert depth > 0 and str_len > 0
+        marked_node_ids = []
+        sim_terms = []
+        queue_this = []  # Terms for the current iteration
+        queue_next = []  # Terms for the next iteration
+        # Setup
+        queue_next += [(term, 1.0)]
+        if term in self.label_to_id_json:
+            marked_node_ids += [self.label_to_id_json[term]]
+        # Loop till depth number of iterations
+        for i in range(depth):
+            queue_this += queue_next
+            for sense, similarity in queue_this:
+                try:
+                    # Get sense id
+                    sense_id = str(self.label_to_id_json[sense])
+                    # Get adjacent sense ids
+                    all_adj_sense_ids = self.adj_list_json[sense_id]
+                    # Get adjacent senses and ids that have not already been marked
+                    adj_sense_ids = [x for x in all_adj_sense_ids if x not in marked_node_ids]
+                    adj_senses = [self.id_to_label_json[str(x)] for x in adj_sense_ids]
+                    # Mark sense ids as seen
+                    marked_node_ids += adj_sense_ids
+                    # Get edge ids for unseen adj senses ------- CORRECT ORDER? -------
+                    edge_ids = [str(sense_id)+'-'+str(x) for x in adj_sense_ids] # From sense to adj_sense
+                    # Get edge weights (similarity) between sense and adj_sense
+                    edge_weights = [self.edge_list_json[x] for x in edge_ids]
+                    # Compute rough similarity between original term and this sense
+                    sense_sim_tup = [(sense, float(sim) * float(similarity)) for sense, sim in zip(adj_senses, edge_weights)]
+                    # Add senses to the queue to be computed later
+                    queue_next += sense_sim_tup
+                    sim_terms += [tup for tup in sense_sim_tup if len(tup[0].split()) <= str_len]
+                except KeyError as e:
+                    pass
+        sim_terms.sort(key=lambda x: x[1], reverse=True)
+        return sim_terms
 
     # Get synonyms that are the same part of speech to the original term
     # term - The word to get synonyms of and the part of speech
@@ -77,28 +217,4 @@ WDT	    wh-determiner	which
 WP	    wh-pronoun	who, what
 WP$	    possessive wh-pronoun	whose
 WRB	    wh-abverb	where, when
-"""
-
-"""
-        self.json_base_dir = '/Users/Eric/Desktop/Thesis/programs/java/json/'
-        self.adj_list_json = json.load(open(self.json_base_dir + 'adjList.json'))
-        self.edge_list_json = json.load(open(self.json_base_dir + 'edgeList.json'))
-        self.id_to_label_json = json.load(open(self.json_base_dir + 'idToLabel.json'))
-        self.label_to_id_json = json.load(open(self.json_base_dir + 'labelToId.json'))
-        self.wf_vertex_db_json = json.load(open(self.json_base_dir + 'wfVertexDb.json'))
-
-    def get_sim_terms(self, term: str) -> list:
-        sim_terms = []
-        if term in self.label_to_id_json:
-            term_id = str(self.label_to_id_json[term])
-            if term_id in self.adj_list_json:
-                adj_nodes = self.adj_list_json[term_id]
-                for adj_node_id in [str(x) for x in adj_nodes]:
-                    if adj_node_id in self.id_to_label_json:
-                        phrase = self.id_to_label_json[adj_node_id]
-                        edge_list_key = str(term_id) + '-' + str(adj_node_id)
-                        if edge_list_key in self.edge_list_json:
-                            edge_weight = self.edge_list_json[edge_list_key]
-                            sim_terms.append((phrase, edge_weight))
-        return sim_terms
 """

@@ -132,6 +132,7 @@ class VectorCollection:
                             # If (stop words not on and term is not a stop word) or (stop words on)
                             if (not stop_words_on and term not in self.stop_words) or stop_words_on:
                                 self.id_to_textvector[cur_query_id].add_term(term) # Add term to term_to_freq
+                                self.id_to_textvector[cur_query_id].terms.append(term)
                                 # Add term to inverted index
                                 self.add_to_inverted_index(cur_query_idx, term, cur_query_idx)
                                 cur_query_idx += 1
@@ -165,7 +166,7 @@ class VectorCollection:
     # doc_limit - An upper limit for the number of document ids returned per query
     # query_limit - An upper limit for the number of queries to process
     # returns a map {Query id : [Doc Ids]}
-    def find_closest_docs(self, documents, dist_obj, doc_limit=sys.maxsize, query_limit=20) -> map:
+    def find_closest_docs(self, documents, dist_obj, doc_limit=20, query_limit=20) -> map:
         results = {}
         computed = 0
         for qry_id, qry_vector in self.id_to_textvector.items():
