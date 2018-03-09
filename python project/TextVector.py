@@ -11,7 +11,7 @@ class TextVector:
         self.term_to_freq = defaultdict(int)
         self.raw_text = ''
         self.id = 0
-        self.length = None
+        self.length = None  # The number of terms in this textvector (lazy loaded)
 
     def __repr__(self):
         s = ''

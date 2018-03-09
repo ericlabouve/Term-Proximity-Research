@@ -9,7 +9,7 @@ import ScoringFunctions as score_fs
 import nltk
 
 
-if __name__ == "__main__":
+if __name__ == "__main2__":
     # qry = "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed car."
     # text = nltk.word_tokenize(qry)
     # tagged = nltk.pos_tag(text)
@@ -20,11 +20,11 @@ if __name__ == "__main__":
     print(result)
     result = wn.get_sim_terms_rw('car', depth=2)
     print(result)
-    similarity = wn.random_walk('car', 'auto', depth=2)
+    similarity = wn.compute_sim_rw('car', 'auto', depth=2)
     print(similarity)
 
 
-if __name__ == "__main2__":
+if __name__ == "__main__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS)
     #docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents2.txt", VectorType.DOCUMENTS)
 
@@ -44,7 +44,8 @@ if __name__ == "__main2__":
     # cosine_avg_map = score_fs.compute_avg_map(cosine_results, relevant_docs, query_limit=query_limit)
     # print(cosine_avg_map)
     #
-    okapi_results = qrys.find_closest_docs(docs, OkapiFunction(docs), doc_limit=doc_limit, query_limit=query_limit)
+    okapi_func = OkapiFunction(docs)
+    okapi_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
     okapi_avg_map = score_fs.compute_avg_map(okapi_results, relevant_docs)
     print(okapi_avg_map)
 

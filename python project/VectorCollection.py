@@ -72,18 +72,25 @@ class VectorCollection:
 
 # __________________Read VectorCollection File Methods__________________
 
-    def add_to_inverted_index(self, doc_id, term, term_offset):
+    # term_offset - absolute position of term inside the document
+    # paragraph - paragraph number of term inside the document
+    # sentence - sentence number of term inside the document
+    # word - word number of term inside the document
+    def add_to_inverted_index(self, doc_id, term, term_offset, sentence):
         term_postings = self.term_to_postings[term] # {doc id : Posting}
         if term_postings.get(doc_id) is None:
             p = Posting()
             p.add_doc_id(doc_id)
             term_postings[doc_id] = p
         term_postings[doc_id].add_offset(term_offset)
+        term_postings[doc_id].add_sentence(sentence)
 
     def parse_documents(self, file_path, stop_words_on, stemming_on, min_word_len):
         with open(file_path) as file:
             cur_doc_id = -1 # Current Doc Id
             cur_doc_idx = 0 # Current Doc Idx
+            sentence_num = 0
+            next_sentence = False
             inside_W = False
             for line in file:
                 if '.I' in line: # Contains Id
@@ -94,24 +101,34 @@ class VectorCollection:
                     inside_W = False
                 elif '.W' in line:
                     inside_W = True
-                    cur_doc_idx = 0 # Reset for next document
+                    # Reset for next document
+                    cur_doc_idx = 0
+                    sentence_num = 0
                 elif inside_W: # In the body of the Document
-                    for term in re.split("[^a-zA-Z]+", line):
-                        term = re.sub(r'[^\w\s]', '', term.lower()) # Remove punctuation
-                        if len(term) >= min_word_len: # Satisfies min length
+                    for term in re.split("[^a-zA-Z.]+", line):
+                        # .'s indicate end of sentence unless it is surrounded by numbers
+                        if '.' in term:
+                            next_sentence = True
+                        term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
+                        if len(term) >= min_word_len:  # Satisfies min length
                             if stemming_on:
                                 term = self.stemmer.stem(term)
                             # If (stop words not on and term is not a stop word) or (stop words on)
                             if (not stop_words_on and term not in self.stop_words) or stop_words_on:
                                 self.id_to_textvector[cur_doc_id].add_term(term) # Add term to term_to_freq
                                 # Add term to inverted index
-                                self.add_to_inverted_index(cur_doc_id, term, cur_doc_idx)
+                                self.add_to_inverted_index(cur_doc_id, term, cur_doc_idx, sentence_num)
                                 cur_doc_idx += 1
+                        if next_sentence:
+                            next_sentence = False
+                            sentence_num += 1
 
     def parse_queries(self, file_path, stop_words_on, stemming_on, min_word_len):
         with open(file_path) as file:
             cur_query_id = 0 # Current Query Id
             cur_query_idx = 0 # Current Query Idx
+            sentence_num = 0
+            next_sentence = False
             inside_W = False
             for line in file:
                 if '.I' in line: # Contains Id
@@ -122,9 +139,13 @@ class VectorCollection:
                     inside_W = False
                 elif '.W' in line:
                     inside_W = True
-                    cur_query_idx = 0 # Reset for next document
+                    # Reset for next document
+                    cur_query_idx = 0
+                    sentence_num = 0
                 elif inside_W: # In the body of the Document
-                    for term in re.split("[^a-zA-Z]+", line):
+                    for term in re.split("[^a-zA-Z.]+", line):
+                        if '.' in term:
+                            next_sentence = True
                         term = re.sub(r'[^\w\s]', '', term.lower()) # Remove punctuation
                         if len(term) >= min_word_len: # Satisfies min length
                             if stemming_on:
@@ -134,8 +155,11 @@ class VectorCollection:
                                 self.id_to_textvector[cur_query_id].add_term(term) # Add term to term_to_freq
                                 self.id_to_textvector[cur_query_id].terms.append(term)
                                 # Add term to inverted index
-                                self.add_to_inverted_index(cur_query_idx, term, cur_query_idx)
+                                self.add_to_inverted_index(cur_query_idx, term, cur_query_idx, sentence_num)
                                 cur_query_idx += 1
+                        if next_sentence:
+                            next_sentence = False
+                            sentence_num += 1
 
 # __________________Normalization Methods__________________
 

@@ -22,7 +22,7 @@ class WordNet:
     # Computes the similarity between two terms as the probability of reaching term2 from term1 and reaching
     # term1 from term1. The equation is: [P(term1 | term2) + P(term1 | term2)] / 2
     # P(a | b) is how many times in our iterations do we come across term a when starting at term b
-    def random_walk(self, term1: str, term2: str, depth=5, iterations=1000) -> float:
+    def compute_sim_rw(self, term1: str, term2: str, depth=5, iterations=1000) -> float:
         assert depth > 0 and iterations > 0
 
         def _random_walk(_term1: str, _term2: str) -> float:
@@ -144,8 +144,13 @@ class WordNet:
                     edge_ids = [str(sense_id)+'-'+str(x) for x in adj_sense_ids] # From sense to adj_sense
                     # Get edge weights (similarity) between sense and adj_sense
                     edge_weights = [self.edge_list_json[x] for x in edge_ids]
+                    # Normalize all edge weights to be values between 0 and 1
+                    sum = 0
+                    for x in edge_weights:
+                        sum += float(x)
+                    edge_weights_norm = [float(x) / sum for x in edge_weights]
                     # Compute rough similarity between original term and this sense
-                    sense_sim_tup = [(sense, float(sim) * float(similarity)) for sense, sim in zip(adj_senses, edge_weights)]
+                    sense_sim_tup = [(sense, float(sim) * float(similarity)) for sense, sim in zip(adj_senses, edge_weights_norm)]
                     # Add senses to the queue to be computed later
                     queue_next += sense_sim_tup
                     sim_terms += [tup for tup in sense_sim_tup if len(tup[0].split()) <= str_len]
@@ -154,11 +159,11 @@ class WordNet:
         sim_terms.sort(key=lambda x: x[1], reverse=True)
         return sim_terms
 
-    # Get synonyms that are the same part of speech to the original term
+    # Get synonyms that are the same part of speech to the original term. Does not compute similarity score
     # term - The word to get synonyms of and the part of speech
     # threshold - Only add synonyms if similarity between original term
     # and the synonym is above the threshold
-    def get_syns(self, term_pos: (str, str), threshold=.5) -> list:
+    def get_syns(self, term_pos: (str, str)) -> list:
         synonyms = []
         term = term_pos[0]
         # Include only words with same part of speech
