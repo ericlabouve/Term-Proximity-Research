@@ -3,6 +3,22 @@ from collections import defaultdict
 import json, random
 
 
+def is_noun(tag: str) -> bool:
+    return any(symbol in tag for symbol in ['NN', 'NNS', 'NNP', 'NNPS'])
+
+
+def is_adjective(tag: str) -> bool:
+    return any(symbol in tag for symbol in ['JJ', 'JJR', 'JJS'])
+
+
+def is_adverb(tag: str) -> bool:
+    return any(symbol in tag for symbol in ['RB', 'RBR', 'RBS'])
+
+
+def is_verb(tag: str) -> bool:
+    return any(symbol in tag for symbol in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ'])
+
+
 class WordNet:
 
     pos_str_map = {'JJ': 'a', 'JJR': 'a', 'JJS': 'a',

@@ -9,7 +9,7 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from collections import defaultdict
 import DistanceFunctions as dist_fs
-import re, sys
+import re, sys, nltk
 
 
 class VectorType(Enum):
@@ -93,24 +93,33 @@ class VectorCollection:
             cur_offset = 0  # Offset of the term inside the text vector
             sentence_num = 0
             next_sentence = False
-            # Loop through each vector term
-            for term in re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text):
-                if '.' in term:
-                    next_sentence = True
-                term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
-                if len(term) >= min_word_len:  # Satisfies min length
-                    if stemming_on:
-                        term = self.stemmer.stem(term)
-                    # If (stop words not on and term is not a stop word) or (stop words on)
-                    if (not stop_words_on and term not in self.stop_words) or stop_words_on:
-                        textvector.add_term(term)  # Add term to term_to_freq
-                        textvector.terms.append(term)
-                        # Add term to inverted index
-                        self.add_to_inverted_index(textvector_id, term, cur_offset, sentence_num)
-                        cur_offset += 1
-                if next_sentence:
-                    next_sentence = False
-                    sentence_num += 1
+            try:
+                split_text = re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text)
+                if split_text[-1] == '':
+                    del split_text[-1]
+                tagged_text = nltk.pos_tag(split_text)
+                # Loop through each vector term
+    #            for term in re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text):
+                for term, pos in tagged_text:
+                    if '.' in term:
+                        next_sentence = True
+                    term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
+                    if len(term) >= min_word_len:  # Satisfies min length
+                        if stemming_on:
+                            term = self.stemmer.stem(term)
+                        # If (stop words not on and term is not a stop word) or (stop words on)
+                        if (not stop_words_on and term not in self.stop_words) or stop_words_on:
+                            textvector.add_term(term)  # Add term to term_to_freq
+                            textvector.terms.append(term)
+                            textvector.terms_pos.append(pos)
+                            # Add term to inverted index
+                            self.add_to_inverted_index(textvector_id, term, cur_offset, sentence_num)
+                            cur_offset += 1
+                    if next_sentence:
+                        next_sentence = False
+                        sentence_num += 1
+            except IndexError:
+                pass
 
     def parse_documents(self, file_path: str, stop_words_on: bool, stemming_on: bool, min_word_len: int):
         # Read vectors into memory

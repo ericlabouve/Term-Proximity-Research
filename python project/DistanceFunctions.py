@@ -1,10 +1,22 @@
 # Holds distance functions to compute distances between queries and documents
 # Eric LaBouve (elabouve@calpoly.edu)
+#
+# DATASET = cran
+# HYPER PARAMETERS: query_limit=225, doc_limit=20, stemming_on=True
+# Unmodified Okapi: MAP=0.25494314903429477
+# is_eary=True MAP=0.2657067430393868
+# is_adj_noun_pairs=True: MAP=0.25654817087197906, Influence=1.8
+# is_eary=True and is_adj_noun_pairs=True: MAP=0.26875021721497516, Influence=1.8
+#
+#
 
-import sys, math
-import QueryVector
+import math
+import sys
+
 import DocumentVector
+import QueryVector
 import VectorCollection
+import WordNet as wn
 
 
 class DistanceFunction:
@@ -77,6 +89,18 @@ def compute_avdl(vector_collection: VectorCollection) -> float:
     return total_words / num_docs
 
 
+# Positively boosts the Okapi score
+# cur_score - Score to be boosted
+# influence - Boosts the current score by value of influence
+def boost(cur_score: float, influence: float) -> float:
+    if cur_score > 0:
+        cur_score *= influence
+    else:
+        cur_score += influence * abs(cur_score) - abs(cur_score)
+    return cur_score
+
+
+# cran: query_limit=225, doc_limit=20: MAP=0.25494314903429477
 class OkapiFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection):
         super().__init__(vector_collection)
@@ -113,7 +137,10 @@ class OkapiFunction(DistanceFunction):
 
 class OkapiModFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection,
-                 is_early=False, is_close_pairs=False):
+                 is_early=False,
+                 is_close_pairs=False,
+                 is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8):
+
         super().__init__(vector_collection)
         # Okapi variables
         self.avdl = compute_avdl(vector_collection)
@@ -123,38 +150,52 @@ class OkapiModFunction(DistanceFunction):
         self.b = 0.75
         # is_early variables
         self.is_early = is_early
-        # last_term variables
+        # is_close_pairs variables
         self.is_close_pairs = is_close_pairs
         self.last_term = None
+        # adj_noun_pairs variables
+        self.is_adj_noun_pairs = is_adj_noun_pairs
+        self.last_term_pos = None
+        self.adj_noun_pairs_influence = adj_noun_pairs_influence
 
-    # is_early - Extra boost to terms that appear in the beginning of the document
     def execute(self) -> float:
         sum = 0
+        terms = []
         # Traverse query terms in order of how they appear
-        for term in self.query.terms:
-            dfi = self.vector_collection.get_doc_freq(term)
-            fij = self.doc.term_to_freq[term]
-            dlj = len(self.doc)
-            fiq = self.query.term_to_freq[term]
-            first_term = math.log((self.num_docs - dfi + 0.5) / (dfi + 0.5))
-            second_term = ((self.k1 + 1) * fij) / (self.k1 * (1 - self.b + self.b * dlj / self.avdl) + fij)
-            third_term = ((self.k2 + 1) * fiq) / (self.k2 + fiq)
-            product = first_term * second_term * third_term
+        # Do not want to double score the same term
+        for term, pos in zip(self.query.terms, self.query.terms_pos):
+            product = 0
+            if term not in terms:
+                dfi = self.vector_collection.get_doc_freq(term)
+                fij = self.doc.term_to_freq[term]
+                dlj = len(self.doc)
+                fiq = self.query.term_to_freq[term]
+                first_term = math.log((self.num_docs - dfi + 0.5) / (dfi + 0.5))
+                second_term = ((self.k1 + 1) * fij) / (self.k1 * (1 - self.b + self.b * dlj / self.avdl) + fij)
+                third_term = ((self.k2 + 1) * fiq) / (self.k2 + fiq)
+
+                product = first_term * second_term * third_term
 
             if self.is_early:
-                product *= self.early_term(term)
+                product = boost(product, self.early_term(term))
 
             if self.is_close_pairs:
-                product += self.close_pairs(term)
+                product = boost(product, self.close_pairs(term))
                 self.last_term = term
 
+            if self.is_adj_noun_pairs:
+                # If the last adjective in the query is before the current noun
+                if self.adj_noun_pairs(term, pos):
+                    product = boost(product, self.adj_noun_pairs_influence)
+                self.last_term_pos = (term, pos)
+
+            terms.append(term)
             sum += product
         return sum
 
     # Compute as a percentage of the way through the document.
     # Range of values: [const, 1] where default const=2
     # boost = (2 * dl - term_loc) / dl
-    # Map Increased from 0.2402 to 0.2475
     def early_term(self, term, const=2):
         dl = 1 if len(self.doc) == 0 else len(self.doc)
         posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
@@ -163,6 +204,7 @@ class OkapiModFunction(DistanceFunction):
 
     # Does not give good results. Gives too much weight to adjacent common words
     #   ex: 'high' 'speed', which detracts from the main subject of the query
+    # MAP=0.23606341931968342
     # Gives an extra boost to adjacent query terms that are near each other
     # in the document. Idea is to give nonlinear reward for terms that are close
     # Evaluate only the closest pair of terms between the two postings.
@@ -174,8 +216,8 @@ class OkapiModFunction(DistanceFunction):
             return 1
         posting1 = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
         posting2 = self.vector_collection.get_term_posting_for_doc(self.last_term, self.doc.id)
-        # Determine if both terms appear in the document
-        if posting1 is None or posting2 is None:
+        # Determine if both terms appear in the document and have not been stemmed to the same term
+        if posting1 is None or posting2 is None or term == self.last_term:
             return 1
         # Find the two closest pairs from the two sorted arrays
         ar1 = posting1.offsets
@@ -204,3 +246,25 @@ class OkapiModFunction(DistanceFunction):
         result = 2 / min_dif
         return result
 
+    # Gives an extra boost to adjectives and nouns that are found near each other,
+    # either in the same sentence or the same clause
+    def adj_noun_pairs(self, term, pos):
+        if self.last_term_pos is None:
+            self.last_term_pos = (term, pos)
+            return False
+        # If there is an adjacent adjective and noun in the query
+        if wn.is_adjective(self.last_term_pos[1]) and wn.is_noun(pos):
+            # Get term locations inside this document
+            posting1 = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+            posting2 = self.vector_collection.get_term_posting_for_doc(self.last_term_pos[0], self.doc.id)
+            # Determine if both terms appear in the document
+            if posting1 is None or posting2 is None:
+                return False
+            # Boost if ADJ and NOUN appear in same sentence and same order as query
+            sentences = zip(posting1.sentence, posting2.sentence)
+            for idx, s1_s2 in enumerate(sentences):
+                s1 = s1_s2[0]
+                s2 = s1_s2[1]
+                if s1 == s2 and posting1.offsets[idx] > posting2.offsets[idx]:
+                    return True
+        return False
