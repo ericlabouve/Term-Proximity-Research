@@ -95,8 +95,10 @@ class VectorCollection:
             next_sentence = False
             try:
                 split_text = re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text)
-                if split_text[-1] == '':
+                if len(split_text) > 0 and split_text[-1] == '':
                     del split_text[-1]
+                if len(split_text) > 0 and split_text[0] == '':
+                    del split_text[0]
                 tagged_text = nltk.pos_tag(split_text)
                 # Loop through each vector term
     #            for term in re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text):
@@ -119,7 +121,7 @@ class VectorCollection:
                         next_sentence = False
                         sentence_num += 1
             except IndexError:
-                pass
+                print("Index Error at evaluate_vectors in VectorCollection")
 
     def parse_documents(self, file_path: str, stop_words_on: bool, stemming_on: bool, min_word_len: int):
         # Read vectors into memory

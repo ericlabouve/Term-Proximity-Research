@@ -10,14 +10,31 @@
 # is_adj_noun_pairs=True (I=1.8): MAP=0.25654817087197906
 # is_adv_verb_pairs=True (I=1.2): MAP=0.2550557616469074
 # is_adj_noun_pairs=True (I=1.8), is_adv_verb_pairs=True (I=1.2): MAP=0.25654817087197906
-# is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.26875021721497516
+# is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.26875021721497516 <-- WINNER, DELTA=0.0138
 # is_eary=True, is_adj_noun_pairs=True (I=1.8), is_adv_verb_pairs=True (I=1.2): MAP=0.26875021721497516
+# is_adj_noun_pairs_linear=True (m=0.25, b=1.75): MAP=0.24733607187791676, (m=0.25, b=1.25): MAP=0.2507139247180413
+# is_adv_verb_pairs_linear=True (m=0.25, b=1.75): MAP=0.25463939144780834, (m=0.25, b=1.25): MAP=0.25463769093858907
 #
 # DATASET = cran: query_limit=225, doc_limit=20, stemming_on=False
 # Unmodified Okapi: MAP=0.23963612749870844
 # is_eary=True MAP=0.2455933914749088
 # is_adj_noun_pairs=True: MAP=0.23666999367828484, Influence=1.8
 # is_eary=True and is_adj_noun_pairs=True: MAP=0.242043464756276, Influence=1.8
+#
+# DATASET = adi: query_limit=35, doc_limit=20, stemming_on=True
+# Unmodified Cosine: MAP=0.32751815084933983
+# Unmodified Okapi: MAP=0.3273929643293058
+# is_eary=True: MAP=0.3424331689001217
+# is_adj_noun_pairs=True (I=1.8): MAP=0.34269184325600427 <-- WINNER, DELTA=0.0152
+# is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.3338557316487712 <-- DELTA=0.0064
+#
+# DATASET = med: query_limit=30, doc_limit=20, stemming_on=True
+# Unmodified Cosine: MAP=0.38147482244846503
+# Unmodified Okapi: MAP=0.40037481693662885
+# is_eary=True: MAP=0.4149885390725527 <-- WINNER, DELTA=0.0146
+# is_adj_noun_pairs=True (I=1.8): MAP=0.3970159388030086
+# is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.41485829343665276 <-- DELTA=0.0144
+
 
 import math
 import sys
@@ -151,7 +168,9 @@ class OkapiModFunction(DistanceFunction):
                  is_noun=False, noun_influence=1.0,
                  is_verb=False, verb_influence=1.0,
                  is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8,
-                 is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2):
+                 is_adj_noun_linear_pairs=False, adj_noun_pairs_m=0.25, adj_noun_pairs_b=1.25,
+                 is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
+                 is_adv_verb_linear_pairs=False, adv_verb_pairs_m=0.25, adv_verb_pairs_b=1.25):
 
         super().__init__(vector_collection)
         # Okapi variables
@@ -174,10 +193,16 @@ class OkapiModFunction(DistanceFunction):
         self.verb_influence = verb_influence
         # is_adj_noun_pairs variables
         self.is_adj_noun_pairs = is_adj_noun_pairs
+        self.is_adj_noun_linear_pairs = is_adj_noun_linear_pairs
         self.adj_noun_pairs_influence = adj_noun_pairs_influence
+        self.adj_noun_pairs_m = adj_noun_pairs_m
+        self.adj_noun_pairs_b = adj_noun_pairs_b
         # is_adj_noun_pairs variables
         self.is_adv_verb_pairs = is_adv_verb_pairs
+        self.is_adv_verb_linear_pairs = is_adv_verb_linear_pairs
         self.adv_verb_pairs_influence = adv_verb_pairs_influence
+        self.adv_verb_pairs_m = adv_verb_pairs_m
+        self.adv_verb_pairs_b = adv_verb_pairs_b
 
     def execute(self) -> float:
         sum = 0
@@ -218,10 +243,18 @@ class OkapiModFunction(DistanceFunction):
                     product = boost(product, self.adj_noun_pairs_influence)
                 self.last_term_pos = (term, pos)
 
+            if self.is_adj_noun_linear_pairs:
+                product = boost(product, self.adj_noun_pairs_linear(term, pos))
+                self.last_term_pos = (term, pos)
+
             if self.is_adv_verb_pairs:
                 # If the last adverb in the query is before the current verb
                 if self.adv_verb_pairs(term, pos):
                     product = boost(product, self.adv_verb_pairs_influence)
+                self.last_term_pos = (term, pos)
+
+            if self.is_adv_verb_linear_pairs:
+                product = boost(product, self.adv_verb_pairs_linear(term, pos))
                 self.last_term_pos = (term, pos)
 
             terms.append(term)
@@ -231,6 +264,10 @@ class OkapiModFunction(DistanceFunction):
     # Compute as a percentage of the way through the document.
     # Range of values: [const, 1] where default const=2
     # boost = (2 * dl - term_loc) / dl
+    # Best Case Scenario: boost(Term X X X) = 2
+    # Worst Case Scenario: boost(X X X Term) ≈ 1 (Approaches 1 as sl gets large)
+    # Example Best = (2 * 4 - 0) / 4 = 8 / 4 = 2
+    # Example Worst = (2 * 4 - 3) / 4 = 5 / 4 = 1.25
     def early_term(self, term, const=2):
         dl = 1 if len(self.doc) == 0 else len(self.doc)
         posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
@@ -304,6 +341,44 @@ class OkapiModFunction(DistanceFunction):
                     return True
         return False
 
+    # Gives a linear boost to adjectives and nouns that are found near each other
+    # in the same sentence. See __init__ for real m and b values.
+    # y = mx + b
+    # boost = max(m * (Idx(Nn)-Idx(Adj)) + (b-m), 1) and 0 ≤ m < -1
+    #             m=-0.25                     m=-0.25
+    #                                       b=2
+    # Best Case Scenario: boost(X Adj Nn X) = 2
+    # Middle Case Scenario: boost(adj X Nn X) =
+    # Middle Case Scenario 2: boost(Adj X X Nn) ≈ 1 (Approaches 1 as separation gets larger)
+    # Example Best = max(-0.25*(2-1) + (2 - -0.25), 1) = max(-0.25+2.25, 1) = 2
+    # Example Middle = max(-0.25*(2-0) + (2 - -0.25), 1) = max(-.5+2.25, 1) = 1.75
+    # Example Middle 2 = max(-0.25*(3-0) + (2 - -0.25), 1) = max(-0.75+2.25, 1) = 1.5
+    # boost(Adj X X X X X X X Nn) = max(-0.25*(8-0) + (2 - -0.25), 1) = max(-2+2.25, 1) = 1
+    def adj_noun_pairs_linear(self, term, pos):
+        if self.last_term_pos is None:
+            self.last_term_pos = (term, pos)
+            return 1
+        # If there is an adjacent adjective and noun in the query
+        if wn.is_adjective(self.last_term_pos[1]) and wn.is_noun(pos):
+            # Get term locations inside this document
+            posting1 = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+            posting2 = self.vector_collection.get_term_posting_for_doc(self.last_term_pos[0], self.doc.id)
+            # Determine if both terms appear in the document
+            if posting1 is None or posting2 is None:
+                return 1
+            # Boost if ADJ and NOUN appear in same sentence and same order as query
+            sentences = zip(posting1.sentence, posting2.sentence)
+            for idx, s1_s2 in enumerate(sentences):
+                s1 = s1_s2[0]
+                s2 = s1_s2[1]
+                if s1 == s2 and posting1.offsets[idx] > posting2.offsets[idx]:
+                    m = self.adj_noun_pairs_m
+                    b = self.adj_noun_pairs_b
+                    idxNn = posting1.offsets[idx]
+                    idxAdj = posting2.offsets[idx]
+                    return max(m * (idxNn-idxAdj) + (b-m), 1)
+        return 1
+
     # Gives an extra boost to adverbs and verbs that are found near each other,
     # either in the same sentence or the same clause
     def adv_verb_pairs(self, term, pos):
@@ -326,3 +401,30 @@ class OkapiModFunction(DistanceFunction):
                 if s1 == s2 and posting1.offsets[idx] > posting2.offsets[idx]:
                     return True
         return False
+
+    # Gives an extra boost to adverbs and verbs that are found near each other
+    # in the same sentence. See __init__ for m and b values.
+    def adv_verb_pairs_linear(self, term, pos):
+        if self.last_term_pos is None:
+            self.last_term_pos = (term, pos)
+            return 1
+        # If there is an adjacent adjective and noun in the query
+        if wn.is_adverb(self.last_term_pos[1]) and wn.is_verb(pos):
+            # Get term locations inside this document
+            posting1 = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+            posting2 = self.vector_collection.get_term_posting_for_doc(self.last_term_pos[0], self.doc.id)
+            # Determine if both terms appear in the document
+            if posting1 is None or posting2 is None:
+                return 1
+            # Boost if ADV and VERB appear in same sentence and same order as query
+            sentences = zip(posting1.sentence, posting2.sentence)
+            for idx, s1_s2 in enumerate(sentences):
+                s1 = s1_s2[0]
+                s2 = s1_s2[1]
+                if s1 == s2 and posting1.offsets[idx] > posting2.offsets[idx]:
+                    m = self.adv_verb_pairs_m
+                    b = self.adv_verb_pairs_b
+                    idxVb = posting1.offsets[idx]
+                    idxAdv = posting2.offsets[idx]
+                    return max(m * (idxVb - idxAdv) + (b - m), 1)
+        return 1

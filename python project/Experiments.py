@@ -22,33 +22,34 @@ if __name__ == "__main0__":
 
 if __name__ == "__main__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
-    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/documents2.txt", VectorType.DOCUMENTS)
-
     qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry",VectorType.QUERIES, stemming_on=True)
-    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/test/queries2.txt", VectorType.QUERIES)
-
     relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
 
     # Cosine Test
-    docs.normalize(docs)
-    qrys.normalize(docs)
+    # docs.normalize(docs)
+    # qrys.normalize(docs)
 
     query_limit = 225
     doc_limit = 20
 
-    cosine_results = qrys.find_closest_docs(docs, CosineFunction(docs), doc_limit=doc_limit, query_limit=query_limit)
-    cosine_avg_map = score_fs.compute_avg_map(cosine_results, relevant_docs, query_limit=query_limit)
-    print(cosine_avg_map)
-
+    # cosine_results = qrys.find_closest_docs(docs, CosineFunction(docs), doc_limit=doc_limit, query_limit=query_limit)
+    # cosine_avg_map = score_fs.compute_avg_map(cosine_results, relevant_docs, query_limit=query_limit)
+    # print("\nCosine MAP=" + str(cosine_avg_map))
+    #
     # okapi_func = OkapiFunction(docs)
     # okapi_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
     # okapi_avg_map = score_fs.compute_avg_map(okapi_results, relevant_docs)
-    # print(okapi_avg_map)
+    # print("\nOkapi MAP=" + str(okapi_avg_map))
 
-    # okapi_func = OkapiModFunction(docs, is_adv_verb_pairs=True, is_adj_noun_pairs=True, is_early=True)
-    # okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
-    # okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
-    # print(okapi_mod_avg_map)
+    okapi_func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True)
+    okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
+    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
+    print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
+
+    okapi_func = OkapiModFunction(docs, is_adv_verb_linear_pairs=True)
+    okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
+    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
+    print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
 
     # print('adv verb pairs')
     # influence = 1.1
