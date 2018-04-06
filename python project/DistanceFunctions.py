@@ -12,8 +12,8 @@
 # is_adj_noun_pairs=True (I=1.8), is_adv_verb_pairs=True (I=1.2): MAP=0.25654817087197906
 # is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.26875021721497516 <-- WINNER, DELTA=0.0138
 # is_eary=True, is_adj_noun_pairs=True (I=1.8), is_adv_verb_pairs=True (I=1.2): MAP=0.26875021721497516
-# is_adj_noun_pairs_linear=True (m=0.25, b=1.75): MAP=0.24733607187791676, (m=0.25, b=1.25): MAP=0.2507139247180413
-# is_adv_verb_pairs_linear=True (m=0.25, b=1.75): MAP=0.25463939144780834, (m=0.25, b=1.25): MAP=0.25463769093858907
+# is_adj_noun_pairs_linear=True (m=0.0, b=1.8): MAP=0.2562593516853681, (m=-0.25, b=1.8): MAP=0.2561618793674165
+# XXXX is_adv_verb_pairs_linear=True (m=0.25, b=1.75): MAP=0.25463939144780834, (m=0.25, b=1.25): MAP=0.25463769093858907
 #
 # DATASET = cran: query_limit=225, doc_limit=20, stemming_on=False
 # Unmodified Okapi: MAP=0.23963612749870844
@@ -168,9 +168,9 @@ class OkapiModFunction(DistanceFunction):
                  is_noun=False, noun_influence=1.0,
                  is_verb=False, verb_influence=1.0,
                  is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8,
-                 is_adj_noun_linear_pairs=False, adj_noun_pairs_m=0.25, adj_noun_pairs_b=1.25,
+                 is_adj_noun_linear_pairs=False, adj_noun_pairs_m=-0.25, adj_noun_pairs_b=1.8,
                  is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
-                 is_adv_verb_linear_pairs=False, adv_verb_pairs_m=0.25, adv_verb_pairs_b=1.25):
+                 is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25):
 
         super().__init__(vector_collection)
         # Okapi variables
@@ -376,6 +376,7 @@ class OkapiModFunction(DistanceFunction):
                     b = self.adj_noun_pairs_b
                     idxNn = posting1.offsets[idx]
                     idxAdj = posting2.offsets[idx]
+                    # print("Adj:" + str(self.last_term_pos[0]) + " Nn:" + term + " y:" + str(max(m * (idxNn-idxAdj) + (b-m), 1)) + " ___ ")
                     return max(m * (idxNn-idxAdj) + (b-m), 1)
         return 1
 

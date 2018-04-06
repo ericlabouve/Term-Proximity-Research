@@ -6,7 +6,12 @@ from VectorCollection import VectorCollection, VectorType
 from DistanceFunctions import CosineFunction, OkapiFunction, OkapiModFunction
 from WordNet import WordNet
 import ScoringFunctions as score_fs
-import nltk, sys
+import nltk, json
+
+
+if __name__ == "__main__":
+    score_fs.graph_precision_recall(225)
+
 
 if __name__ == "__main0__":
     qry = "papers on shock sound wave interaction"
@@ -23,6 +28,7 @@ if __name__ == "__main0__":
 if __name__ == "__main__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry",VectorType.QUERIES, stemming_on=True)
+    # map {Query Ids : [Relevant Doc Ids]}
     relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
 
     # Cosine Test
@@ -32,24 +38,29 @@ if __name__ == "__main__":
     query_limit = 225
     doc_limit = 20
 
+    # map {Query id : [Doc Ids]} where Doc Ids are sorted in order of relevance
     # cosine_results = qrys.find_closest_docs(docs, CosineFunction(docs), doc_limit=doc_limit, query_limit=query_limit)
     # cosine_avg_map = score_fs.compute_avg_map(cosine_results, relevant_docs, query_limit=query_limit)
     # print("\nCosine MAP=" + str(cosine_avg_map))
-    #
+
     # okapi_func = OkapiFunction(docs)
     # okapi_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
     # okapi_avg_map = score_fs.compute_avg_map(okapi_results, relevant_docs)
     # print("\nOkapi MAP=" + str(okapi_avg_map))
 
-    okapi_func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True)
-    okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
-    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
-    print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
+    # with open('out/human_judgement.json', 'w') as f1:
+    #     f1.write(json.dumps(dict(relevant_docs)))
+    # with open('out/cosine_results.json', 'w') as f2:
+    #     f2.write(json.dumps(cosine_results))
+    # with open('out/okapi_results.json', 'w') as f3:
+    #     f3.write(json.dumps(okapi_results))
 
-    okapi_func = OkapiModFunction(docs, is_adv_verb_linear_pairs=True)
+    okapi_func = OkapiModFunction(docs, is_early=True)
     okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
     print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
+    # with open('out/okapi_isearly_results.json', 'w') as f3:
+    #     f3.write(json.dumps(okapi_mod_results))
 
     # print('adv verb pairs')
     # influence = 1.1
