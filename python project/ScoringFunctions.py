@@ -77,17 +77,43 @@ def graph_precision_recall(num_queries, recall_buckets=10):
         okapi_results = json.load(f)
     with open('out/okapi_isearly_results.json') as f:
         okapi_isearly_results = json.load(f)
+    with open('out/okapi_isearlynoun_results.json') as f:
+        okapi_isearlynoun_results = json.load(f)
+    with open('out/okapi_isearlyverb_results.json') as f:
+        okapi_isearlyverb_results = json.load(f)
+    with open('out/okapi_isearlynotverb_results.json') as f:
+        okapi_isearlynotverb_results = json.load(f)
+    with open('out/okapi_isearlyq_results.json') as f:
+        okapi_isearlyq_results = json.load(f)
+    with open('out/okapi_isearlyqnoun_results.json') as f:
+        okapi_isearlyqnoun_results = json.load(f)
+    with open('out/okapi_isearlyqverb_results.json') as f:
+        okapi_isearlyqverb_results = json.load(f)
 
     cos_query_results, r1 = calc_pr_scores(cos_results, human_judgement, num_queries)
     okapi_query_results, r2 = calc_pr_scores(okapi_results, human_judgement, num_queries)
     okapi_isearly_query_results, r2 = calc_pr_scores(okapi_isearly_results, human_judgement, num_queries)
+    okapi_isearlynoun_query_results, r2 = calc_pr_scores(okapi_isearlynoun_results, human_judgement, num_queries)
+    okapi_isearlyverb_query_results, r2 = calc_pr_scores(okapi_isearlyverb_results, human_judgement, num_queries)
+    okapi_isearlynotverb_query_results, r2 = calc_pr_scores(okapi_isearlynotverb_results, human_judgement, num_queries)
+    okapi_isearlyq_query_results, r2 = calc_pr_scores(okapi_isearlyq_results, human_judgement, num_queries)
+    okapi_isearlyqnoun_query_results, r2 = calc_pr_scores(okapi_isearlyqnoun_results, human_judgement, num_queries)
+    okapi_isearlyqverb_query_results, r2 = calc_pr_scores(okapi_isearlyqverb_results, human_judgement, num_queries)
 
     max_recall = max([r1, r2])
     bucket_s = max_recall / recall_buckets  # Length between each tick on the x axis
     xs = [float('%.2f' % (bucket_s * x)) for x in range(recall_buckets + 1)]
     print(max_recall)
+
     # Algorithm and its label
-    data_lists = [(cos_query_results, 'cosine'), (okapi_query_results, 'okapi'), (okapi_isearly_query_results, 'is early')]
+    data_lists = [#(cos_query_results, 'cosine'),
+                  (okapi_query_results, 'okapi'),
+                  (okapi_isearly_query_results, 'is early'),
+                  (okapi_isearlynoun_query_results, 'is early noun'),
+                  (okapi_isearlyverb_query_results, 'is early verb'),
+                  (okapi_isearlynotverb_query_results, 'is early nverb')]
+                # (okapi_isearlyq_query_results, 'is early query'), (okapi_isearlyqnoun_query_results, 'is early query noun'), (okapi_isearlyqverb_query_results, 'is early query verb')]
+
     # Loop through each IR algorithm
     for score_list, label in data_lists:
         ys = [0 for x in range(recall_buckets + 1)]

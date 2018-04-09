@@ -9,10 +9,6 @@ import ScoringFunctions as score_fs
 import nltk, json
 
 
-if __name__ == "__main__":
-    score_fs.graph_precision_recall(225)
-
-
 if __name__ == "__main0__":
     qry = "papers on shock sound wave interaction"
     text = nltk.word_tokenize(qry)
@@ -55,12 +51,12 @@ if __name__ == "__main__":
     # with open('out/okapi_results.json', 'w') as f3:
     #     f3.write(json.dumps(okapi_results))
 
-    okapi_func = OkapiModFunction(docs, is_early=True)
+    okapi_func = OkapiModFunction(docs, is_early_not_verb=True)
     okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
     print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
-    # with open('out/okapi_isearly_results.json', 'w') as f3:
-    #     f3.write(json.dumps(okapi_mod_results))
+    with open('out/okapi_isearlynotverb_results.json', 'w') as f3:
+        f3.write(json.dumps(okapi_mod_results))
 
     # print('adv verb pairs')
     # influence = 1.1
@@ -80,3 +76,6 @@ if __name__ == "__main__":
     # print("Best influence = " + str(best_influence))
     # print("Best MAP = " + str(best_map))
 
+
+if __name__ == "__main__":
+    score_fs.graph_precision_recall(225)

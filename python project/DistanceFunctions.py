@@ -4,29 +4,31 @@
 # DATASET = cran: query_limit=225, doc_limit=20, stemming_on=True
 # Unmodified Cosine: MAP=0.25144842545683216
 # Unmodified Okapi: MAP=0.25494314903429477
-# is_eary=True MAP=0.2657067430393868
-# is_noun=True (I=1.1) MAP=0.2553366000643001
-# is_verb=True (I=1.1) MAP=0.2536578704799122
-# is_adj_noun_pairs=True (I=1.8): MAP=0.25654817087197906
-# is_adv_verb_pairs=True (I=1.2): MAP=0.2550557616469074
-# is_adj_noun_pairs=True (I=1.8), is_adv_verb_pairs=True (I=1.2): MAP=0.25654817087197906
-# is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.26875021721497516 <-- WINNER, DELTA=0.0138
-# is_eary=True, is_adj_noun_pairs=True (I=1.8), is_adv_verb_pairs=True (I=1.2): MAP=0.26875021721497516
-# is_adj_noun_pairs_linear=True (m=0.0, b=1.8): MAP=0.2562593516853681, (m=-0.25, b=1.8): MAP=0.2561618793674165
-# XXXX is_adv_verb_pairs_linear=True (m=0.25, b=1.75): MAP=0.25463939144780834, (m=0.25, b=1.25): MAP=0.25463769093858907
+# is_eary MAP=0.2657067430393868, is_early_noun MAP=0.2557234211457406, is_early_verb MAP=0.24309728665047647
+# is_early_not_verb MAP=0.2671928450317639
+# is_eary_q MAP=0.23925568215473444, is_early_q_noun MAP=0.24206554021827026, is_early_q_verb MAP=0.2427258814417755
+# is_noun (I=1.1) MAP=0.2553366000643001
+# is_verb (I=1.1) MAP=0.2536578704799122
+# is_adj_noun_pairs (I=1.8): MAP=0.25654817087197906
+# is_adv_verb_pairs (I=1.2): MAP=0.2550557616469074
+# is_adj_noun_pairs (I=1.8), is_adv_verb_pairs (I=1.2): MAP=0.25654817087197906
+# is_eary, is_adj_noun_pairs (I=1.8): MAP=0.26875021721497516 <-- WINNER, DELTA=0.0138
+# is_eary, is_adj_noun_pairs (I=1.8), is_adv_verb_pairs (I=1.2): MAP=0.26875021721497516
+# is_adj_noun_pairs_linear (m=0.0, b=1.8): MAP=0.2562593516853681, (m=-0.25, b=1.8): MAP=0.2561618793674165
+# XXXX is_adv_verb_pairs_linear (m=0.25, b=1.75): MAP=0.25463939144780834, (m=0.25, b=1.25): MAP=0.25463769093858907
 #
 # DATASET = cran: query_limit=225, doc_limit=20, stemming_on=False
 # Unmodified Okapi: MAP=0.23963612749870844
-# is_eary=True MAP=0.2455933914749088
-# is_adj_noun_pairs=True: MAP=0.23666999367828484, Influence=1.8
-# is_eary=True and is_adj_noun_pairs=True: MAP=0.242043464756276, Influence=1.8
+# is_eary MAP=0.2455933914749088
+# is_adj_noun_pairs: MAP=0.23666999367828484, Influence=1.8
+# is_eary and is_adj_noun_pairs: MAP=0.242043464756276, Influence=1.8
 #
 # DATASET = adi: query_limit=35, doc_limit=20, stemming_on=True
 # Unmodified Cosine: MAP=0.32751815084933983
 # Unmodified Okapi: MAP=0.3273929643293058
-# is_eary=True: MAP=0.3424331689001217
-# is_adj_noun_pairs=True (I=1.8): MAP=0.34269184325600427 <-- WINNER, DELTA=0.0152
-# is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.3338557316487712 <-- DELTA=0.0064
+# is_eary: MAP=0.3424331689001217
+# is_adj_noun_pairs (I=1.8): MAP=0.34269184325600427 <-- WINNER, DELTA=0.0152
+# is_eary, is_adj_noun_pairs (I=1.8): MAP=0.3338557316487712 <-- DELTA=0.0064
 #
 # DATASET = med: query_limit=30, doc_limit=20, stemming_on=True
 # Unmodified Cosine: MAP=0.38147482244846503
@@ -163,7 +165,8 @@ class OkapiFunction(DistanceFunction):
 
 class OkapiModFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection,
-                 is_early=False,
+                 is_early=False, is_early_noun=False, is_early_verb=False, is_early_not_verb=False,
+                 is_early_q=False, is_early_q_noun=False, is_early_q_verb=False,
                  is_close_pairs=False,
                  is_noun=False, noun_influence=1.0,
                  is_verb=False, verb_influence=1.0,
@@ -182,6 +185,12 @@ class OkapiModFunction(DistanceFunction):
         self.last_term_pos = None
         # is_early variables
         self.is_early = is_early
+        self.is_early_noun = is_early_noun
+        self.is_early_verb = is_early_verb
+        self.is_early_not_verb = is_early_not_verb
+        self.is_early_q = is_early_q
+        self.is_early_q_noun = is_early_q_noun
+        self.is_early_q_verb = is_early_q_verb
         # is_close_pairs variables
         self.is_close_pairs = is_close_pairs
         self.last_term = None
@@ -225,6 +234,29 @@ class OkapiModFunction(DistanceFunction):
             if self.is_early:
                 product = boost(product, self.early_term(term))
 
+            if self.is_early_noun:
+                if wn.is_noun(pos):
+                    product = boost(product, self.early_term(term))
+
+            if self.is_early_verb:
+                if wn.is_verb(pos):
+                    product = boost(product, self.early_term(term))
+
+            if self.is_early_not_verb:
+                if not wn.is_verb(pos):
+                    product = boost(product, self.early_term(term))
+
+            if self.is_early_q:
+                product = boost(product, self.early_term_q(term))
+
+            if self.is_early_q_noun:
+                if wn.is_noun(pos):
+                    product = boost(product, self.early_term_q(term))
+
+            if self.is_early_q_verb:
+                if wn.is_verb(pos):
+                    product = boost(product, self.early_term_q(term))
+
             if self.is_close_pairs:
                 product = boost(product, self.close_pairs(term))
                 self.last_term = term
@@ -261,6 +293,7 @@ class OkapiModFunction(DistanceFunction):
             sum += product
         return sum
 
+    # Boosts the query term's score if it is found earlier in the document
     # Compute as a percentage of the way through the document.
     # Range of values: [const, 1] where default const=2
     # boost = (2 * dl - term_loc) / dl
@@ -273,6 +306,19 @@ class OkapiModFunction(DistanceFunction):
         posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
         term_loc = dl if posting is None else posting.offsets[0]
         return (const * dl - term_loc) / dl
+
+    # Boosts the query term's score if it is found earlier in the query
+    # Compute as a percentage of the way through the query.
+    # Range of values: [const, 1] where default const=2
+    # boost = (2 * ql - term_loc) / ql
+    # Best Case Scenario: boost(Term X X X) = 2
+    # Worst Case Scenario: boost(X X X Term) ≈ 1 (Approaches 1 as sl gets large)
+    # Example Best = (2 * 4 - 0) / 4 = 8 / 4 = 2
+    # Example Worst = (2 * 4 - 3) / 4 = 5 / 4 = 1.25
+    def early_term_q(self, term, const=2):
+        ql = 1 if len(self.query) == 0 else len(self.query)
+        term_loc = self.query.terms.index(term)
+        return (const * ql - term_loc) / ql
 
     # Does not give good results. Gives too much weight to adjacent common words
     #   ex: 'high' 'speed', which detracts from the main subject of the query
