@@ -75,14 +75,29 @@ def graph_precision_recall(num_queries, recall_buckets=10):
         cos_results = json.load(f)
     with open('out/okapi_results.json') as f:
         okapi_results = json.load(f)
+
     with open('out/okapi_isearly_results.json') as f:
         okapi_isearly_results = json.load(f)
     with open('out/okapi_isearlynoun_results.json') as f:
         okapi_isearlynoun_results = json.load(f)
     with open('out/okapi_isearlyverb_results.json') as f:
         okapi_isearlyverb_results = json.load(f)
+    with open('out/okapi_isearlyadj_results.json') as f:
+        okapi_isearlyadj_results = json.load(f)
+    with open('out/okapi_isearlyadv_results.json') as f:
+        okapi_isearlyadv_results = json.load(f)
+    with open('out/okapi_isearlynounadj_results.json') as f:
+        okapi_isearlynounadj_results = json.load(f)
+
+    with open('out/okapi_isearlynotnoun_results.json') as f:
+        okapi_isearlynotnoun_results = json.load(f)
     with open('out/okapi_isearlynotverb_results.json') as f:
         okapi_isearlynotverb_results = json.load(f)
+    with open('out/okapi_isearlynotadj_results.json') as f:
+        okapi_isearlynotadj_results = json.load(f)
+    with open('out/okapi_isearlynotadv_results.json') as f:
+        okapi_isearlynotadv_results = json.load(f)
+
     with open('out/okapi_isearlyq_results.json') as f:
         okapi_isearlyq_results = json.load(f)
     with open('out/okapi_isearlyqnoun_results.json') as f:
@@ -92,10 +107,19 @@ def graph_precision_recall(num_queries, recall_buckets=10):
 
     cos_query_results, r1 = calc_pr_scores(cos_results, human_judgement, num_queries)
     okapi_query_results, r2 = calc_pr_scores(okapi_results, human_judgement, num_queries)
+
     okapi_isearly_query_results, r2 = calc_pr_scores(okapi_isearly_results, human_judgement, num_queries)
     okapi_isearlynoun_query_results, r2 = calc_pr_scores(okapi_isearlynoun_results, human_judgement, num_queries)
     okapi_isearlyverb_query_results, r2 = calc_pr_scores(okapi_isearlyverb_results, human_judgement, num_queries)
+    okapi_isearlyadj_query_results, r2 = calc_pr_scores(okapi_isearlyadj_results, human_judgement, num_queries)
+    okapi_isearlyadv_query_results, r2 = calc_pr_scores(okapi_isearlyadv_results, human_judgement, num_queries)
+    okapi_isearlynounadj_query_results, r2 = calc_pr_scores(okapi_isearlynounadj_results, human_judgement, num_queries)
+
+    okapi_isearlynotnoun_query_results, r2 = calc_pr_scores(okapi_isearlynotnoun_results, human_judgement, num_queries)
     okapi_isearlynotverb_query_results, r2 = calc_pr_scores(okapi_isearlynotverb_results, human_judgement, num_queries)
+    okapi_isearlynotadj_query_results, r2 = calc_pr_scores(okapi_isearlynotadj_results, human_judgement, num_queries)
+    okapi_isearlynotadv_query_results, r2 = calc_pr_scores(okapi_isearlynotadv_results, human_judgement, num_queries)
+
     okapi_isearlyq_query_results, r2 = calc_pr_scores(okapi_isearlyq_results, human_judgement, num_queries)
     okapi_isearlyqnoun_query_results, r2 = calc_pr_scores(okapi_isearlyqnoun_results, human_judgement, num_queries)
     okapi_isearlyqverb_query_results, r2 = calc_pr_scores(okapi_isearlyqverb_results, human_judgement, num_queries)
@@ -106,13 +130,26 @@ def graph_precision_recall(num_queries, recall_buckets=10):
     print(max_recall)
 
     # Algorithm and its label
-    data_lists = [#(cos_query_results, 'cosine'),
-                  (okapi_query_results, 'okapi'),
+    data_lists = [
                   (okapi_isearly_query_results, 'is early'),
-                  (okapi_isearlynoun_query_results, 'is early noun'),
-                  (okapi_isearlyverb_query_results, 'is early verb'),
-                  (okapi_isearlynotverb_query_results, 'is early nverb')]
-                # (okapi_isearlyq_query_results, 'is early query'), (okapi_isearlyqnoun_query_results, 'is early query noun'), (okapi_isearlyqverb_query_results, 'is early query verb')]
+#                  (okapi_isearlynoun_query_results, 'is early noun'),
+#                  (okapi_isearlyverb_query_results, 'is early verb'),
+#                  (okapi_isearlyadj_query_results, 'is early adj'),
+#                  (okapi_isearlyadv_query_results, 'is early adv'),
+                  (okapi_isearlynounadj_query_results, 'is early noun+adj'),
+
+#                  (okapi_isearlynotnoun_query_results, 'is early nnoun'),
+#                  (okapi_isearlynotverb_query_results, 'is early nverb'),
+#                  (okapi_isearlynotadj_query_results, 'is early nadj'),
+#                  (okapi_isearlynotadv_query_results, 'is early nadv'),
+
+#                  (okapi_isearlyq_query_results, 'is early query'),
+#                  (okapi_isearlyqnoun_query_results, 'is early query noun'),
+#                  (okapi_isearlyqverb_query_results, 'is early query verb'),
+
+#                  (cos_query_results, 'cosine'),
+                  (okapi_query_results, 'okapi')
+                  ]
 
     # Loop through each IR algorithm
     for score_list, label in data_lists:

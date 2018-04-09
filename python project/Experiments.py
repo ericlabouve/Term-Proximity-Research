@@ -21,7 +21,7 @@ if __name__ == "__main0__":
     print(wn.get_sim_terms_rw('interaction', depth=5))
 
 
-if __name__ == "__main__":
+if __name__ == "__main0__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry",VectorType.QUERIES, stemming_on=True)
     # map {Query Ids : [Relevant Doc Ids]}
@@ -51,11 +51,18 @@ if __name__ == "__main__":
     # with open('out/okapi_results.json', 'w') as f3:
     #     f3.write(json.dumps(okapi_results))
 
-    okapi_func = OkapiModFunction(docs, is_early_not_verb=True)
+    okapi_func = OkapiModFunction(docs, is_early_noun_adj=True)
     okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
     print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
-    with open('out/okapi_isearlynotverb_results.json', 'w') as f3:
+    with open('out/okapi_isearlynounadj_results.json', 'w') as f3:
+        f3.write(json.dumps(okapi_mod_results))
+
+    okapi_func = OkapiModFunction(docs, is_early_not_verb_adv=True)
+    okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
+    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
+    print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
+    with open('out/okapi_isearlynotverbadv_results.json', 'w') as f3:
         f3.write(json.dumps(okapi_mod_results))
 
     # print('adv verb pairs')

@@ -4,8 +4,11 @@
 # DATASET = cran: query_limit=225, doc_limit=20, stemming_on=True
 # Unmodified Cosine: MAP=0.25144842545683216
 # Unmodified Okapi: MAP=0.25494314903429477
-# is_eary MAP=0.2657067430393868, is_early_noun MAP=0.2557234211457406, is_early_verb MAP=0.24309728665047647
-# is_early_not_verb MAP=0.2671928450317639
+# *is_eary MAP=0.2657067430393868,
+# is_early_noun MAP=0.2557234211457406, is_early_verb MAP=0.24309728665047647, is_early_adj MAP=0.25747784394004675, is_early_adv MAP=0.2544465841075828
+# *is_early_noun_adj MAP=0.26761057623165885
+# is_early_not_noun MAP=0.2546388563734556, is_early_not_verb MAP=0.2671928450317639, is_early_not_adj MAP=0.25136672688205836, is_early_not_adv MAP=0.2642443640019426
+# *is_early_not_verb_adv MAP=0.26671563603266807 <-? Should be very close to is_early_noun_adj (Might exist missed more p.o.s.'s)
 # is_eary_q MAP=0.23925568215473444, is_early_q_noun MAP=0.24206554021827026, is_early_q_verb MAP=0.2427258814417755
 # is_noun (I=1.1) MAP=0.2553366000643001
 # is_verb (I=1.1) MAP=0.2536578704799122
@@ -165,7 +168,10 @@ class OkapiFunction(DistanceFunction):
 
 class OkapiModFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection,
-                 is_early=False, is_early_noun=False, is_early_verb=False, is_early_not_verb=False,
+                 is_early=False, is_early_noun=False, is_early_verb=False, is_early_adj=False, is_early_adv=False,
+                 is_early_noun_adj=False,
+                 is_early_not_noun=False, is_early_not_verb=False, is_early_not_adj=False, is_early_not_adv=False,
+                 is_early_not_verb_adv=False,
                  is_early_q=False, is_early_q_noun=False, is_early_q_verb=False,
                  is_close_pairs=False,
                  is_noun=False, noun_influence=1.0,
@@ -187,7 +193,14 @@ class OkapiModFunction(DistanceFunction):
         self.is_early = is_early
         self.is_early_noun = is_early_noun
         self.is_early_verb = is_early_verb
+        self.is_early_adj = is_early_adj
+        self.is_early_adv = is_early_adv
+        self.is_early_noun_adj = is_early_noun_adj
+        self.is_early_not_noun = is_early_not_noun
         self.is_early_not_verb = is_early_not_verb
+        self.is_early_not_adj = is_early_not_adj
+        self.is_early_not_adv = is_early_not_adv
+        self.is_early_not_verb_adv = is_early_not_verb_adv
         self.is_early_q = is_early_q
         self.is_early_q_noun = is_early_q_noun
         self.is_early_q_verb = is_early_q_verb
@@ -233,58 +246,70 @@ class OkapiModFunction(DistanceFunction):
 
             if self.is_early:
                 product = boost(product, self.early_term(term))
-
             if self.is_early_noun:
                 if wn.is_noun(pos):
                     product = boost(product, self.early_term(term))
-
             if self.is_early_verb:
                 if wn.is_verb(pos):
                     product = boost(product, self.early_term(term))
-
+            if self.is_early_adj:
+                if wn.is_adjective(pos):
+                    product = boost(product, self.early_term(term))
+            if self.is_early_adv:
+                if wn.is_adverb(pos):
+                    product = boost(product, self.early_term(term))
+            if self.is_early_noun_adj:
+                if wn.is_noun(pos) or wn.is_adjective(pos):
+                    product = boost(product, self.early_term(term))
+            if self.is_early_not_noun:
+                if not wn.is_noun(pos):
+                    product = boost(product, self.early_term(term))
             if self.is_early_not_verb:
                 if not wn.is_verb(pos):
+                    product = boost(product, self.early_term(term))
+            if self.is_early_not_adj:
+                if not wn.is_adjective(pos):
+                    product = boost(product, self.early_term(term))
+            if self.is_early_not_adv:
+                if not wn.is_adverb(pos):
+                    product = boost(product, self.early_term(term))
+            if self.is_early_not_verb_adv:
+                if not wn.is_verb(pos) and not wn.is_adverb(pos):
                     product = boost(product, self.early_term(term))
 
             if self.is_early_q:
                 product = boost(product, self.early_term_q(term))
-
             if self.is_early_q_noun:
                 if wn.is_noun(pos):
                     product = boost(product, self.early_term_q(term))
-
             if self.is_early_q_verb:
                 if wn.is_verb(pos):
                     product = boost(product, self.early_term_q(term))
 
-            if self.is_close_pairs:
-                product = boost(product, self.close_pairs(term))
-                self.last_term = term
-
             if self.is_noun:
                 if wn.is_noun(pos):
                     product = boost(product, self.noun_influence)
-
             if self.is_verb:
                 if wn.is_verb(pos):
                     product = boost(product, self.verb_influence)
+
+            if self.is_close_pairs:
+                product = boost(product, self.close_pairs(term))
+                self.last_term = term
 
             if self.is_adj_noun_pairs:
                 # If the last adjective in the query is before the current noun
                 if self.adj_noun_pairs(term, pos):
                     product = boost(product, self.adj_noun_pairs_influence)
                 self.last_term_pos = (term, pos)
-
             if self.is_adj_noun_linear_pairs:
                 product = boost(product, self.adj_noun_pairs_linear(term, pos))
                 self.last_term_pos = (term, pos)
-
             if self.is_adv_verb_pairs:
                 # If the last adverb in the query is before the current verb
                 if self.adv_verb_pairs(term, pos):
                     product = boost(product, self.adv_verb_pairs_influence)
                 self.last_term_pos = (term, pos)
-
             if self.is_adv_verb_linear_pairs:
                 product = boost(product, self.adv_verb_pairs_linear(term, pos))
                 self.last_term_pos = (term, pos)
