@@ -120,6 +120,13 @@ def compute_avdl(vector_collection: VectorCollection) -> float:
     return total_words / num_docs
 
 
+# Scales up when term is less frequent
+def compute_idf(vector_collection: VectorCollection, term: str) -> float:
+    dfi = vector_collection.get_doc_freq(term)
+    num_docs = len(vector_collection.id_to_textvector)
+    return math.log((num_docs - dfi + 0.5) / (dfi + 0.5))
+
+
 # Positively boosts the Okapi score
 # cur_score - Score to be boosted
 # influence - Boosts the current score by value of influence

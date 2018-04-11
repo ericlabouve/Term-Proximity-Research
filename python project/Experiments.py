@@ -3,7 +3,7 @@
 
 
 from VectorCollection import VectorCollection, VectorType
-from DistanceFunctions import CosineFunction, OkapiFunction, OkapiModFunction
+from DistanceFunctions import CosineFunction, OkapiFunction, OkapiModFunction, compute_idf
 from WordNet import WordNet
 import ScoringFunctions as score_fs
 import nltk, json
@@ -23,7 +23,7 @@ if __name__ == "__main0__":
 
 if __name__ == "__main0__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
-    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry",VectorType.QUERIES, stemming_on=True)
+    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
     # map {Query Ids : [Relevant Doc Ids]}
     relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
 
@@ -55,14 +55,14 @@ if __name__ == "__main0__":
     okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
     print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
-    with open('out/okapi_isearlynounadj_results.json', 'w') as f3:
+    with open('out/adi/okapi_isearlynounadj_results.json', 'w') as f3:
         f3.write(json.dumps(okapi_mod_results))
 
     okapi_func = OkapiModFunction(docs, is_early_not_verb_adv=True)
     okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
     print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
-    with open('out/okapi_isearlynotverbadv_results.json', 'w') as f3:
+    with open('out/adi/okapi_isearlynotverbadv_results.json', 'w') as f3:
         f3.write(json.dumps(okapi_mod_results))
 
     # print('adv verb pairs')
@@ -84,5 +84,63 @@ if __name__ == "__main0__":
     # print("Best MAP = " + str(best_map))
 
 
-if __name__ == "__main__":
+if __name__ == "__main0__":
     score_fs.graph_precision_recall(225)
+
+
+if __name__ == "__main__":
+    # Determine the maximum number of documents/score my system can return without word substitutions
+    docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
+    # map {Query Ids : [Relevant Doc Ids]}
+    relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
+    # Load my system
+    with open('out/cran/okapi_isearlynounadj_results.json') as f:
+        results = json.load(f)
+
+    q_id = 6
+    print('Query=' + str(qrys.id_to_textvector[q_id].terms))
+    print('Returned Doc ids=' + str(results[str(q_id)]))
+
+    print('\nCorrect Relevant:')
+    # For each relevant document, which terms from the query does the document contain?
+    for doc_id in relevant_docs[q_id]:
+        if doc_id in results[str(q_id)]:
+            term_intersect = list(set(docs.id_to_textvector[doc_id].terms) & set(qrys.id_to_textvector[q_id].terms))
+            idf = []
+            for term in term_intersect:
+                idf.append(round(compute_idf(docs, term), 2))
+            print('Doc id:' + str(doc_id) + ', len=' + str(len(term_intersect)) + ', terms = ' + str(term_intersect) + ', ' + str(idf))
+
+    print('\nMissed Relevant:')
+    for doc_id in relevant_docs[q_id]:
+        if doc_id not in results[str(q_id)]:
+            term_intersect = list(set(docs.id_to_textvector[doc_id].terms) & set(qrys.id_to_textvector[q_id].terms))
+            idf = []
+            for term in term_intersect:
+                idf.append(round(compute_idf(docs, term), 2))
+            print('Doc id:' + str(doc_id) + ', len=' + str(len(term_intersect)) + ', terms = ' + str(term_intersect) + ', ' + str(idf))
+
+    print('\nFalse Positives:')
+    for doc_id in results[str(q_id)]:
+        doc_id = int(doc_id)
+        if doc_id not in relevant_docs[q_id] and doc_id in results[str(q_id)]:
+            term_intersect = list(set(docs.id_to_textvector[doc_id].terms) & set(qrys.id_to_textvector[q_id].terms))
+            idf = []
+            for term in term_intersect:
+                idf.append(round(compute_idf(docs, term), 2))
+            print('Doc id:' + str(doc_id) + ', len=' + str(len(term_intersect)) + ', terms = ' + str(term_intersect) + ', ' + str(idf))
+
+
+
+
+
+
+
+
+
+
+
+
+
+

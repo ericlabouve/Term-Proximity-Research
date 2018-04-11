@@ -9,7 +9,7 @@ class TextVector:
     def __init__(self):
         # Maps {string term : int frequency}
         self.term_to_freq = defaultdict(int)
-        # Maps {string term : int frequency}
+        # Maps {string term : float frequency}
         self.normalized_term_to_freq = {}
         # Exact copy of the original text vector
         self.raw_text = ''
