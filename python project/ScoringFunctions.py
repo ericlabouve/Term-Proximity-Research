@@ -227,6 +227,22 @@ def read_human_judgement(file_path, best_score, worst_score):
                 relevant_docs[query_num].append(doc_num)
     return relevant_docs
 
+# Returns a mapping from {Query Ids : [Relevant Doc Ids]}
+# path - File path
+# best Beginning range for human judgement
+# worst Ending range for human judgement
+def read_human_judgement_MED(file_path, best_score, worst_score):
+    relevant_docs = defaultdict(list)
+    with open(file_path) as file:
+        for line in file:
+            items = line.split()
+            query_num = int(items[0])
+            doc_num = int(items[2])
+            degree_rel = int(items[3])
+            # Check if degree of relevance is in our bounds
+            if best_score <= degree_rel <= worst_score:
+                relevant_docs[query_num].append(doc_num)
+    return relevant_docs
 
 
 

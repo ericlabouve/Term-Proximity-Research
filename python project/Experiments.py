@@ -1,12 +1,13 @@
 # Experiments and the location of main
 # Eric LaBouve (elabouve@calpoly.edu)
 
-
+import ScoringFunctions as score_fs
+import nltk, json, sys
 from VectorCollection import VectorCollection, VectorType
 from DistanceFunctions import CosineFunction, OkapiFunction, OkapiModFunction, compute_idf
 from WordNet import WordNet
-import ScoringFunctions as score_fs
-import nltk, json
+from multiprocessing import Process, Queue, Array, Manager
+
 
 
 if __name__ == "__main0__":
@@ -20,6 +21,48 @@ if __name__ == "__main0__":
     print(wn.get_sim_terms_rw('sound', depth=5))
     print(wn.get_sim_terms_rw('interaction', depth=5))
 
+
+def run(queue, okapi_func, label):
+    okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
+    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
+    queue.append((label, okapi_mod_avg_map))
+
+if __name__ == "__main__":
+    docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
+    relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
+
+    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.ALL", VectorType.DOCUMENTS, stemming_on=True)
+    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.QRY", VectorType.QUERIES, stemming_on=True)
+    # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.REL", 0, 0) # DIFFERENT FORMAT
+
+    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
+    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
+    # relevant_docs = score_fs.read_human_judgement_MED("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
+
+    m = Manager()
+    q = m.list()
+    query_limit = 225
+    doc_limit = 20
+
+    okapi_func1 = OkapiModFunction(docs, is_early_noun_adj=True, is_adj_noun_linear_pairs=True)
+    p1 = Process(target=run, args=(q, okapi_func1, 'is_early_noun_adj, is_adj_noun_linear_pairs'))
+    # okapi_func2 = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=3.0)
+    # p2 = Process(target=run, args=(q, okapi_func2, 'is_early_noun_adj, infl=3.0'))
+    # okapi_func3 = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=3.2)
+    # p3 = Process(target=run, args=(q, okapi_func3, 'is_early_noun_adj, infl=3.2'))
+
+    p1.start()
+    # p2.start()
+    # p3.start()
+
+    p1.join()
+    # p2.join()
+    # p3.join()
+
+    q = sorted(q, key=lambda x: x[1], reverse=True)
+    print()
+    print(q)
 
 if __name__ == "__main0__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
@@ -51,44 +94,38 @@ if __name__ == "__main0__":
     # with open('out/okapi_results.json', 'w') as f3:
     #     f3.write(json.dumps(okapi_results))
 
-    okapi_func = OkapiModFunction(docs, is_early_noun_adj=True)
-    okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
-    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
-    print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
-    with open('out/adi/okapi_isearlynounadj_results.json', 'w') as f3:
-        f3.write(json.dumps(okapi_mod_results))
+    #________________________________________________________________________________________________
+    # okapi_func = OkapiModFunction(docs, is_early_noun_adj=True)
+    # okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
+    # okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
+    # print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
+    # with open('out/adi/okapi_isearlynounadj_results.json', 'w') as f3:
+    #     f3.write(json.dumps(okapi_mod_results))
 
-    okapi_func = OkapiModFunction(docs, is_early_not_verb_adv=True)
-    okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
-    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
-    print("\nOkapi Mod MAP=" + str(okapi_mod_avg_map))
-    with open('out/adi/okapi_isearlynotverbadv_results.json', 'w') as f3:
-        f3.write(json.dumps(okapi_mod_results))
-
-    # print('adv verb pairs')
-    # influence = 1.1
-    # best_influence = 0
-    # best_map = 0
-    # while influence <= 2.0:
-    #     sys.stdout.write('Influence=' + str(influence) + ' ')
-    #     sys.stdout.flush()
-    #     okapi_func = OkapiModFunction(docs, is_adv_verb_pairs=True, adv_verb_pairs_influence=influence)
-    #     okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
-    #     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
-    #     if okapi_mod_avg_map > best_map:
-    #         best_map = okapi_mod_avg_map
-    #         best_influence = influence
-    #     print(okapi_mod_avg_map)
-    #     influence += 0.1
-    # print("Best influence = " + str(best_influence))
-    # print("Best MAP = " + str(best_map))
+    print('adv verb pairs')
+    influence = 1.6
+    best_influence = 0
+    best_map = 0
+    while influence <= 2.0:
+        sys.stdout.write('Influence=' + str(influence) + ' ')
+        sys.stdout.flush()
+        okapi_func = OkapiModFunction(docs, is_adj_noun_2gram=True, adj_noun_2gram_influence=influence)
+        okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
+        okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
+        if okapi_mod_avg_map > best_map:
+            best_map = okapi_mod_avg_map
+            best_influence = influence
+        print(okapi_mod_avg_map)
+        influence += 0.2
+    print("Best influence = " + str(best_influence))
+    print("Best MAP = " + str(best_map))
 
 
 if __name__ == "__main0__":
     score_fs.graph_precision_recall(225)
 
 
-if __name__ == "__main__":
+if __name__ == "__main0__":
     # Determine the maximum number of documents/score my system can return without word substitutions
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
@@ -98,8 +135,10 @@ if __name__ == "__main__":
     with open('out/cran/okapi_isearlynounadj_results.json') as f:
         results = json.load(f)
 
-    q_id = 6
-    print('Query=' + str(qrys.id_to_textvector[q_id].terms))
+    q_id = 62
+    qry = qrys.id_to_textvector[q_id]
+    print('Query=' + str(qry.raw_text))
+    print('Terms='+str(list(zip(qry.terms, qry.terms_pos))))
     print('Returned Doc ids=' + str(results[str(q_id)]))
 
     print('\nCorrect Relevant:')

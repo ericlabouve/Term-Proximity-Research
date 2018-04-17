@@ -1,6 +1,9 @@
 # Holds distance functions to compute distances between queries and documents
 # Eric LaBouve (elabouve@calpoly.edu)
 #
+# Process: Maximize boost on just Okapi in cran. Then tack onto main Okapi_mod equation.
+# Boosts: is_early_noun_adj @ infl=3.0 && is_adj_noun_linear_pairs @ infl=1.8
+#
 # DATASET = cran: query_limit=225, doc_limit=20, stemming_on=True
 # Unmodified Cosine: MAP=0.25144842545683216
 # Unmodified Okapi: MAP=0.25494314903429477
@@ -13,12 +16,18 @@
 # is_noun (I=1.1) MAP=0.2553366000643001
 # is_verb (I=1.1) MAP=0.2536578704799122
 # is_adj_noun_pairs (I=1.8): MAP=0.25654817087197906
+# is_adj_noun_pairs (I=2.0): MAP=0.25587828134811696
 # is_adv_verb_pairs (I=1.2): MAP=0.2550557616469074
 # is_adj_noun_pairs (I=1.8), is_adv_verb_pairs (I=1.2): MAP=0.25654817087197906
 # is_eary, is_adj_noun_pairs (I=1.8): MAP=0.26875021721497516 <-- WINNER, DELTA=0.0138
 # is_eary, is_adj_noun_pairs (I=1.8), is_adv_verb_pairs (I=1.2): MAP=0.26875021721497516
 # is_adj_noun_pairs_linear (m=0.0, b=1.8): MAP=0.2562593516853681, (m=-0.25, b=1.8): MAP=0.2561618793674165
 # XXXX is_adv_verb_pairs_linear (m=0.25, b=1.75): MAP=0.25463939144780834, (m=0.25, b=1.25): MAP=0.25463769093858907
+# [('is_adj_noun_pairs, infl=1.8', 0.2562593516853681), ('is_adj_noun_linear_pairs, infl=1.8, m=-.25', 0.2561618793674165), ('is_adj_noun_2gram, infl=2.0', 0.25587828134811696)]
+# [('is_early_noun_adj, infl=2.2', 0.26828000171419336), ('is_early_noun_adj, infl=1.8', 0.2682270490493831), ('is_early_noun_adj, infl=2.0', 0.26761057623165885)]
+# [('is_early_noun_adj, infl=2.8', 0.2697372618575758), ('is_early_noun_adj, infl=2.6', 0.269706340976655), ('is_early_noun_adj, infl=2.4', 0.26922002341522633)]
+# [('is_early_noun_adj, is_adj_noun_linear_pairs', 0.26878757900477657)]
+#
 #
 # DATASET = cran: query_limit=225, doc_limit=20, stemming_on=False
 # Unmodified Okapi: MAP=0.23963612749870844
@@ -32,6 +41,9 @@
 # is_eary: MAP=0.3424331689001217
 # is_adj_noun_pairs (I=1.8): MAP=0.34269184325600427 <-- WINNER, DELTA=0.0152
 # is_eary, is_adj_noun_pairs (I=1.8): MAP=0.3338557316487712 <-- DELTA=0.0064
+# [('is_adj_noun_2gram, infl=2.0', 0.3430093035734646), ('is_adj_noun_linear_pairs, infl=1.8, m=-.25', 0.3430093035734646), ('is_adj_noun_pairs, infl=1.8', 0.34269184325600427)]
+# [('is_early_noun_adj, is_adj_noun_linear_pairs', 0.36749757713114145)]
+
 #
 # DATASET = med: query_limit=30, doc_limit=20, stemming_on=True
 # Unmodified Cosine: MAP=0.38147482244846503
@@ -39,6 +51,9 @@
 # is_eary=True: MAP=0.4149885390725527 <-- WINNER, DELTA=0.0146
 # is_adj_noun_pairs=True (I=1.8): MAP=0.3970159388030086
 # is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.41485829343665276 <-- DELTA=0.0144
+# [('is_adj_noun_pairs, infl=1.8', 0.3970159388030086), ('is_adj_noun_linear_pairs, infl=1.8, m=-.25', 0.3963426788456155), ('is_adj_noun_2gram, infl=2.0', 0.39250962655962657)]
+# [('is_early_noun_adj, infl=3.0', 0.41276317041038524), ('is_early_noun_adj, infl=3.2', 0.41133315662653996), ('is_early_noun_adj, infl=2.8', 0.4112554860113274), ('is_early_noun_adj, infl=3.4', 0.41085480310135364), ('is_early_noun_adj, infl=3.6', 0.4093309793157536), ('is_early_noun_adj, infl=3.8', 0.4088113639652844)]
+# [('is_early_noun_adj, is_adj_noun_linear_pairs', 0.41059342467786597)]
 
 
 import math
@@ -126,16 +141,25 @@ def compute_idf(vector_collection: VectorCollection, term: str) -> float:
     num_docs = len(vector_collection.id_to_textvector)
     return math.log((num_docs - dfi + 0.5) / (dfi + 0.5))
 
-
+# Flawed because we want our boosts to be independent of one another
+#
 # Positively boosts the Okapi score
 # cur_score - Score to be boosted
 # influence - Boosts the current score by value of influence
+# def boost(cur_score: float, influence: float) -> float:
+#     if cur_score > 0:
+#         cur_score *= influence
+#     else:
+#         cur_score += influence * abs(cur_score) - abs(cur_score)
+#     return cur_score
+
+
+# Returns how much the current score should be boosted
 def boost(cur_score: float, influence: float) -> float:
     if cur_score > 0:
-        cur_score *= influence
+        return (cur_score * influence) - cur_score
     else:
-        cur_score += influence * abs(cur_score) - abs(cur_score)
-    return cur_score
+        return (abs(cur_score) * influence) - abs(cur_score)
 
 
 # cran: query_limit=225, doc_limit=20: MAP=0.25494314903429477
@@ -157,7 +181,7 @@ class OkapiFunction(DistanceFunction):
     # dlj is the document length (in bytes) of d
     # avdl is the average document length of the collection
     def execute(self) -> float:
-        sum = 0
+        okapi_sum = 0
         for term, weight in self.query.term_to_freq.items():
             dfi = self.vector_collection.get_doc_freq(term)
             fij = self.doc.term_to_freq[term]
@@ -169,13 +193,13 @@ class OkapiFunction(DistanceFunction):
             third_term = ((self.k2 + 1) * fiq) / (self.k2 + fiq)
 
             product = first_term * second_term * third_term
-            sum += product
-        return sum
+            okapi_sum += product
+        return okapi_sum
 
 
 class OkapiModFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection,
-                 is_early=False, is_early_noun=False, is_early_verb=False, is_early_adj=False, is_early_adv=False,
+                 is_early=False, is_early_noun=False, is_early_verb=False, is_early_adj=False, is_early_adv=False, early_term_influence=3.0,
                  is_early_noun_adj=False,
                  is_early_not_noun=False, is_early_not_verb=False, is_early_not_adj=False, is_early_not_adv=False,
                  is_early_not_verb_adv=False,
@@ -183,7 +207,7 @@ class OkapiModFunction(DistanceFunction):
                  is_close_pairs=False,
                  is_noun=False, noun_influence=1.0,
                  is_verb=False, verb_influence=1.0,
-                 is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8,
+                 is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8, is_adj_noun_2gram=False, adj_noun_2gram_influence=2.0,
                  is_adj_noun_linear_pairs=False, adj_noun_pairs_m=-0.25, adj_noun_pairs_b=1.8,
                  is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
                  is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25):
@@ -202,6 +226,7 @@ class OkapiModFunction(DistanceFunction):
         self.is_early_verb = is_early_verb
         self.is_early_adj = is_early_adj
         self.is_early_adv = is_early_adv
+        self.early_term_influence = early_term_influence
         self.is_early_noun_adj = is_early_noun_adj
         self.is_early_not_noun = is_early_not_noun
         self.is_early_not_verb = is_early_not_verb
@@ -222,8 +247,10 @@ class OkapiModFunction(DistanceFunction):
         self.verb_influence = verb_influence
         # is_adj_noun_pairs variables
         self.is_adj_noun_pairs = is_adj_noun_pairs
+        self.is_adj_noun_2gram = is_adj_noun_2gram
         self.is_adj_noun_linear_pairs = is_adj_noun_linear_pairs
         self.adj_noun_pairs_influence = adj_noun_pairs_influence
+        self.adj_noun_2gram_influence = adj_noun_2gram_influence
         self.adj_noun_pairs_m = adj_noun_pairs_m
         self.adj_noun_pairs_b = adj_noun_pairs_b
         # is_adj_noun_pairs variables
@@ -234,7 +261,7 @@ class OkapiModFunction(DistanceFunction):
         self.adv_verb_pairs_b = adv_verb_pairs_b
 
     def execute(self) -> float:
-        sum = 0
+        okapi_sum = 0
         terms = []
         # Traverse query terms in order of how they appear
         # Do not want to double score the same term
@@ -251,79 +278,86 @@ class OkapiModFunction(DistanceFunction):
 
                 product = first_term * second_term * third_term
 
+            # Independent collection of boosts
+            boosts = []
             if self.is_early:
-                product = boost(product, self.early_term(term))
+                boosts.append(boost(product, self.early_term(term)))
             if self.is_early_noun:
                 if wn.is_noun(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_verb:
                 if wn.is_verb(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_adj:
                 if wn.is_adjective(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_adv:
                 if wn.is_adverb(pos):
-                    product = boost(product, self.early_term(term))
-            if self.is_early_noun_adj:
+                    boosts.append(boost(product, self.early_term(term)))
+            if self.is_early_noun_adj: # Boost both adjectives and nouns
                 if wn.is_noun(pos) or wn.is_adjective(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_not_noun:
                 if not wn.is_noun(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_not_verb:
                 if not wn.is_verb(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_not_adj:
                 if not wn.is_adjective(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_not_adv:
                 if not wn.is_adverb(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_not_verb_adv:
                 if not wn.is_verb(pos) and not wn.is_adverb(pos):
-                    product = boost(product, self.early_term(term))
+                    boosts.append(boost(product, self.early_term(term)))
 
             if self.is_early_q:
-                product = boost(product, self.early_term_q(term))
+                boosts.append(boost(product, self.early_term_q(term)))
             if self.is_early_q_noun:
                 if wn.is_noun(pos):
-                    product = boost(product, self.early_term_q(term))
+                    boosts.append(boost(product, self.early_term_q(term)))
             if self.is_early_q_verb:
                 if wn.is_verb(pos):
-                    product = boost(product, self.early_term_q(term))
+                    boosts.append(boost(product, self.early_term_q(term)))
 
             if self.is_noun:
                 if wn.is_noun(pos):
-                    product = boost(product, self.noun_influence)
+                    boosts.append(boost(product, self.noun_influence))
             if self.is_verb:
                 if wn.is_verb(pos):
-                    product = boost(product, self.verb_influence)
+                    boosts.append(boost(product, self.verb_influence))
 
             if self.is_close_pairs:
-                product = boost(product, self.close_pairs(term))
+                boosts.append(boost(product, self.close_pairs(term)))
                 self.last_term = term
 
             if self.is_adj_noun_pairs:
                 # If the last adjective in the query is before the current noun
                 if self.adj_noun_pairs(term, pos):
-                    product = boost(product, self.adj_noun_pairs_influence)
+                    boosts.append(boost(product, self.adj_noun_pairs_influence))
+                self.last_term_pos = (term, pos)
+            if self.is_adj_noun_2gram:
+                # If the last adjective in the query is right before the current noun
+                if self.adj_noun_2gram(term, pos):
+                    boosts.append(boost(product, self.adj_noun_2gram_influence))
                 self.last_term_pos = (term, pos)
             if self.is_adj_noun_linear_pairs:
-                product = boost(product, self.adj_noun_pairs_linear(term, pos))
+                boosts.append(boost(product, self.adj_noun_pairs_linear(term, pos)))
                 self.last_term_pos = (term, pos)
             if self.is_adv_verb_pairs:
                 # If the last adverb in the query is before the current verb
                 if self.adv_verb_pairs(term, pos):
-                    product = boost(product, self.adv_verb_pairs_influence)
+                    boosts.append(boost(product, self.adv_verb_pairs_influence))
                 self.last_term_pos = (term, pos)
             if self.is_adv_verb_linear_pairs:
-                product = boost(product, self.adv_verb_pairs_linear(term, pos))
+                boosts.append(boost(product, self.adv_verb_pairs_linear(term, pos)))
                 self.last_term_pos = (term, pos)
 
             terms.append(term)
-            sum += product
-        return sum
+            okapi_sum += product + sum(boosts)
+        return okapi_sum
 
     # Boosts the query term's score if it is found earlier in the document
     # Compute as a percentage of the way through the document.
@@ -333,11 +367,11 @@ class OkapiModFunction(DistanceFunction):
     # Worst Case Scenario: boost(X X X Term) ≈ 1 (Approaches 1 as sl gets large)
     # Example Best = (2 * 4 - 0) / 4 = 8 / 4 = 2
     # Example Worst = (2 * 4 - 3) / 4 = 5 / 4 = 1.25
-    def early_term(self, term, const=2):
+    def early_term(self, term):
         dl = 1 if len(self.doc) == 0 else len(self.doc)
         posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
         term_loc = dl if posting is None else posting.offsets[0]
-        return (const * dl - term_loc) / dl
+        return (self.early_term_influence * dl - term_loc) / dl
 
     # Boosts the query term's score if it is found earlier in the query
     # Compute as a percentage of the way through the query.
@@ -416,6 +450,28 @@ class OkapiModFunction(DistanceFunction):
                 s1 = s1_s2[0]
                 s2 = s1_s2[1]
                 if s1 == s2 and posting1.offsets[idx] > posting2.offsets[idx]:
+                    return True
+        return False
+
+    # Gives an extra boost to adjectives and nouns that are found right next to each other,
+    def adj_noun_2gram(self, term, pos):
+        if self.last_term_pos is None:
+            self.last_term_pos = (term, pos)
+            return False
+        # If there is an adjacent adjective and noun in the query
+        if wn.is_adjective(self.last_term_pos[1]) and wn.is_noun(pos):
+            # Get term locations inside this document
+            posting1 = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+            posting2 = self.vector_collection.get_term_posting_for_doc(self.last_term_pos[0], self.doc.id)
+            # Determine if both terms appear in the document
+            if posting1 is None or posting2 is None:
+                return False
+            # Boost if ADJ and NOUN appear in same sentence and right after each other as they do in the query
+            sentences = zip(posting1.sentence, posting2.sentence)
+            for idx, s1_s2 in enumerate(sentences):
+                s1 = s1_s2[0]
+                s2 = s1_s2[1]
+                if s1 == s2 and ((posting1.offsets[idx] - posting2.offsets[idx]) == 1):
                     return True
         return False
 
