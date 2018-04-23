@@ -10,16 +10,17 @@ from multiprocessing import Process, Queue, Array, Manager
 
 
 
-if __name__ == "__main0__":
-    qry = "papers on shock sound wave interaction"
-    text = nltk.word_tokenize(qry)
-    print(nltk.pos_tag(text))
+if __name__ == "__main__":
+#    qry = "papers on shock sound wave interaction"
+#    text = nltk.word_tokenize(qry)
+#    print(nltk.pos_tag(text))
 
     wn = WordNet()
-    print(wn.get_sim_terms_rw('papers', depth=5))
-    print(wn.get_sim_terms_rw('shock', depth=5))
-    print(wn.get_sim_terms_rw('sound', depth=5))
-    print(wn.get_sim_terms_rw('interaction', depth=5))
+    print(wn.get_sim_terms_rw('quickly', depth=5))
+#    print(wn.get_sim_terms_rw('papers', depth=5))
+#    print(wn.get_sim_terms_rw('shock', depth=5))
+#    print(wn.get_sim_terms_rw('sound', depth=5))
+#    print(wn.get_sim_terms_rw('interaction', depth=5))
 
 
 def run(queue, okapi_func, label):
@@ -27,7 +28,7 @@ def run(queue, okapi_func, label):
     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
     queue.append((label, okapi_mod_avg_map))
 
-if __name__ == "__main__":
+if __name__ == "__main0__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
     relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
@@ -45,20 +46,20 @@ if __name__ == "__main__":
     query_limit = 225
     doc_limit = 20
 
-    okapi_func1 = OkapiModFunction(docs, is_early_noun_adj=True, is_adj_noun_linear_pairs=True)
-    p1 = Process(target=run, args=(q, okapi_func1, 'is_early_noun_adj, is_adj_noun_linear_pairs'))
-    # okapi_func2 = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=3.0)
-    # p2 = Process(target=run, args=(q, okapi_func2, 'is_early_noun_adj, infl=3.0'))
-    # okapi_func3 = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=3.2)
-    # p3 = Process(target=run, args=(q, okapi_func3, 'is_early_noun_adj, infl=3.2'))
+    okapi_func1 = OkapiModFunction(docs, is_close_pairs=True, close_pairs_influence=1.8)
+    p1 = Process(target=run, args=(q, okapi_func1, 'is_close_pairs, close_pairs_influence=1.8'))
+    okapi_func2 = OkapiModFunction(docs, is_close_pairs=True, close_pairs_influence=2.0)
+    p2 = Process(target=run, args=(q, okapi_func2, 'is_close_pairs, close_pairs_influence=2.0'))
+    okapi_func3 = OkapiModFunction(docs, is_close_pairs=True, close_pairs_influence=2.2)
+    p3 = Process(target=run, args=(q, okapi_func3, 'is_close_pairs, close_pairs_influence=2.2'))
 
     p1.start()
-    # p2.start()
-    # p3.start()
+    p2.start()
+    p3.start()
 
     p1.join()
-    # p2.join()
-    # p3.join()
+    p2.join()
+    p3.join()
 
     q = sorted(q, key=lambda x: x[1], reverse=True)
     print()
@@ -135,7 +136,7 @@ if __name__ == "__main0__":
     with open('out/cran/okapi_isearlynounadj_results.json') as f:
         results = json.load(f)
 
-    q_id = 62
+    q_id = 1
     qry = qrys.id_to_textvector[q_id]
     print('Query=' + str(qry.raw_text))
     print('Terms='+str(list(zip(qry.terms, qry.terms_pos))))

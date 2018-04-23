@@ -27,6 +27,7 @@
 # [('is_early_noun_adj, infl=2.2', 0.26828000171419336), ('is_early_noun_adj, infl=1.8', 0.2682270490493831), ('is_early_noun_adj, infl=2.0', 0.26761057623165885)]
 # [('is_early_noun_adj, infl=2.8', 0.2697372618575758), ('is_early_noun_adj, infl=2.6', 0.269706340976655), ('is_early_noun_adj, infl=2.4', 0.26922002341522633)]
 # [('is_early_noun_adj, is_adj_noun_linear_pairs', 0.26878757900477657)]
+# [('is_close_pairs, close_pairs_influence=1.6', 0.23689959793912033), ('is_close_pairs, close_pairs_influence=1.4', 0.23418025401844592), ('is_close_pairs, close_pairs_influence=1.2', 0.2300814231511335)] [('is_close_pairs, close_pairs_influence=1.8', 0.2369096642859982), ('is_close_pairs, close_pairs_influence=2.0', 0.235438361323313), ('is_close_pairs, close_pairs_influence=2.2', 0.2337479801314114)]
 #
 #
 # DATASET = cran: query_limit=225, doc_limit=20, stemming_on=False
@@ -204,7 +205,7 @@ class OkapiModFunction(DistanceFunction):
                  is_early_not_noun=False, is_early_not_verb=False, is_early_not_adj=False, is_early_not_adv=False,
                  is_early_not_verb_adv=False,
                  is_early_q=False, is_early_q_noun=False, is_early_q_verb=False,
-                 is_close_pairs=False,
+                 is_close_pairs=False, close_pairs_influence=2.0,
                  is_noun=False, noun_influence=1.0,
                  is_verb=False, verb_influence=1.0,
                  is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8, is_adj_noun_2gram=False, adj_noun_2gram_influence=2.0,
@@ -238,6 +239,7 @@ class OkapiModFunction(DistanceFunction):
         self.is_early_q_verb = is_early_q_verb
         # is_close_pairs variables
         self.is_close_pairs = is_close_pairs
+        self.close_pairs_influence = close_pairs_influence
         self.last_term = None
         # is_noun variables
         self.is_noun = is_noun
@@ -392,7 +394,7 @@ class OkapiModFunction(DistanceFunction):
     # Gives an extra boost to adjacent query terms that are near each other
     # in the document. Idea is to give nonlinear reward for terms that are close
     # Evaluate only the closest pair of terms between the two postings.
-    # Range of values: [2, 0]
+    # Range of values: [2, 1]
     # boost = 2 / min_distance
     def close_pairs(self, term):
         if self.last_term is None:
@@ -427,7 +429,7 @@ class OkapiModFunction(DistanceFunction):
                 dif = abs(ar1[i] - ar2[j])
                 min_dif = min(min_dif, dif)
                 j += 1
-        result = 2 / min_dif
+        result = self.close_pairs_influence / min_dif
         return result
 
     # Gives an extra boost to adjectives and nouns that are found near each other,
