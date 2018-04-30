@@ -11,16 +11,19 @@ from multiprocessing import Process, Queue, Array, Manager
 
 
 if __name__ == "__main__":
-#    qry = "papers on shock sound wave interaction"
-#    text = nltk.word_tokenize(qry)
-#    print(nltk.pos_tag(text))
+    # qry = "what problems of heat conduction in composite slabs have been solved so far ."
+    # [('what', 'WP'), ('problems', 'NNS'), ('of', 'IN'), ('heat', 'NN'), ('conduction', 'NN'), ('in', 'IN'), ('composite', 'JJ'), ('slabs', 'NNS'), ('have', 'VBP'), ('been', 'VBN'), ('solved', 'VBN'), ('so', 'RB'), ('far', 'RB'), ('.', '.')]
+    # text = nltk.word_tokenize(qry)
+    # print(nltk.pos_tag(text))
 
-    wn = WordNet()
-    print(wn.get_sim_terms_rw('quickly', depth=5))
-#    print(wn.get_sim_terms_rw('papers', depth=5))
-#    print(wn.get_sim_terms_rw('shock', depth=5))
-#    print(wn.get_sim_terms_rw('sound', depth=5))
-#    print(wn.get_sim_terms_rw('interaction', depth=5))
+    total = 0
+    for tup in [('resolved', 0.20200892857142858), ('solving', 0.0859375), ('solve', 0.08370535714285714), ('unresolved', 0.041294642857142856), ('cleared', 0.04017857142857143), ('debt', 0.0390625), ('clear', 0.03459821428571429), ('settle', 0.033482142857142856), ('resolving', 0.033482142857142856), ('clearing', 0.03236607142857143), ('unsolved', 0.03236607142857143), ('find', 0.027901785714285716), ('resolve', 0.024553571428571428), ('solution', 0.022321428571428572), ('licked', 0.021205357142857144), ('work', 0.018973214285714284), ('wrought', 0.015625), ('works', 0.015625), ('licking', 0.014508928571428572), ('working', 0.014508928571428572), ('lick', 0.013392857142857142), ('open-and-shut', 0.011160714285714286), ('example', 0.008928571428571428), ('x', 0.008928571428571428), ('insolvable', 0.008928571428571428), ('equation', 0.008928571428571428), ('old', 0.0078125), ('easily', 0.0078125), ('meaning', 0.0078125), ('solvable', 0.006696428571428571), ('unsoluble', 0.006696428571428571), ('obvious', 0.005580357142857143), ('understand', 0.005580357142857143), ('remain', 0.004464285714285714), ('being', 0.004464285714285714), ('unresolvable', 0.004464285714285714), ('resolvable', 0.004464285714285714), ('boss', 0.0033482142857142855), ('situation', 0.0033482142857142855), ('unpleasant', 0.0033482142857142855), ('decided', 0.0033482142857142855), ('going', 0.002232142857142857), ('capable', 0.002232142857142857), ('soluble', 0.002232142857142857), ('many', 0.002232142857142857), ('unsolvable', 0.002232142857142857), ('case', 0.002232142857142857), ('problem', 0.002232142857142857), ('math', 0.002232142857142857), ('understanding', 0.002232142857142857), ('exercise', 0.0011160714285714285), ('develop', 0.0011160714285714285), ('perfectly', 0.0011160714285714285), ('finance', 0.0011160714285714285), ('l', 0.0011160714285714285), ('task', 0.0011160714285714285)]:
+        total += tup[1]
+    print(total)
+    #
+    # wn = WordNet()
+    # print(wn.get_sim_terms_rw('solved'))
+    # print(wn.get_syns(('solved', 'VBN')))
 
 
 def run(queue, okapi_func, label):
@@ -35,35 +38,49 @@ if __name__ == "__main0__":
 
     # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.ALL", VectorType.DOCUMENTS, stemming_on=True)
     # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.QRY", VectorType.QUERIES, stemming_on=True)
-    # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.REL", 0, 0) # DIFFERENT FORMAT
+    # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.REL", 0, 0)  # DIFFERENT FORMAT
 
     # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
     # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
     # relevant_docs = score_fs.read_human_judgement_MED("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
 
+    # docs.normalize(docs)
+    # qrys.normalize(docs)
+
     m = Manager()
     q = m.list()
-    query_limit = 225
-    doc_limit = 20
+    query_limit = -1  # Use all queries
+    doc_limit = -1  # Use all documents
+    process_list = []
 
-    okapi_func1 = OkapiModFunction(docs, is_close_pairs=True, close_pairs_influence=1.8)
-    p1 = Process(target=run, args=(q, okapi_func1, 'is_close_pairs, close_pairs_influence=1.8'))
-    okapi_func2 = OkapiModFunction(docs, is_close_pairs=True, close_pairs_influence=2.0)
-    p2 = Process(target=run, args=(q, okapi_func2, 'is_close_pairs, close_pairs_influence=2.0'))
-    okapi_func3 = OkapiModFunction(docs, is_close_pairs=True, close_pairs_influence=2.2)
-    p3 = Process(target=run, args=(q, okapi_func3, 'is_close_pairs, close_pairs_influence=2.2'))
+    # Loop for running processes in parallel that differ by level of influence
+    # influence = 1.4
+    # while influence <= 1.6:
+    #     okapi_func = OkapiModFunction(docs, is_early_noun_adj=True, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=influence)
+    #     p = Process(target=run, args=(q, okapi_func, 'is_early_noun_adj inf=' + str(influence)))
+    #     process_list.append(p)
+    #     influence += 0.1
 
-    p1.start()
-    p2.start()
-    p3.start()
+    okapi_func1 = OkapiModFunction(docs, is_early_noun_adj=True, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=1.5)
+    # okapi_func2 = OkapiModFunction(docs, is_early_noun_adj=True, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=1.4)
+    p1 = Process(target=run, args=(q, okapi_func1, 'inf=1.5'))
+    # p2 = Process(target=run, args=(q, okapi_func2, 'inf=1.4'))
+    process_list.append(p1)
+    # process_list.append(p2)
 
-    p1.join()
-    p2.join()
-    p3.join()
+    # Start all processes
+    for p in process_list:
+        p.start()
 
+    # Wait for all processes to end
+    for p in process_list:
+        p.join()
+
+    # Sort based on base MAP score and display stats
     q = sorted(q, key=lambda x: x[1], reverse=True)
     print()
     print(q)
+
 
 if __name__ == "__main0__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)

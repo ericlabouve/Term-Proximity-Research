@@ -183,10 +183,10 @@ class VectorCollection:
     # self - Intended to be the Query VectorCollection
     # documents - Intended to be the Documents VectorCollection
     # dist_obj - A object that holds a distance function
-    # doc_limit - An upper limit for the number of document ids returned per query
-    # query_limit - An upper limit for the number of queries to process
+    # doc_limit - An upper limit for the number of document ids returned per query. If negative, use all documents
+    # query_limit - An upper limit for the number of queries to process. If negative, use all queries
     # returns a map {Query id : [Doc Ids]}
-    def find_closest_docs(self, documents, dist_obj, doc_limit=20, query_limit=20) -> map:
+    def find_closest_docs(self, documents, dist_obj, doc_limit=-1, query_limit=-1) -> map:
         results = {}
         computed = 0
         for qry_id, qry_vector in self.id_to_textvector.items():
@@ -197,7 +197,6 @@ class VectorCollection:
             sys.stdout.write("Q:" + str(qry_id) + " ")
             sys.stdout.flush()
             if computed == query_limit:
-                print()
                 break
         return results
 

@@ -121,11 +121,21 @@ class WordNet:
                         break
                 # Record frequency of node we land on
                 freq[sense_id] += 1
+
+        norm_term = 0
+        # Get normalization term for next loop
+        for sense_id, frq in freq.items():
+            sense = self.id_to_label_json[str(sense_id)]
+            if len(sense.split()) <= str_len:  # one word
+                norm_term += frq
+
+        # Normalize all terms
         sim_terms = []
         for sense_id, frq in freq.items():
             sense = self.id_to_label_json[str(sense_id)]
-            if len(sense.split()) <= str_len:
-                sim_terms.append((sense, frq / iterations))
+            if len(sense.split()) <= str_len:  # one word
+                sim_terms.append((sense, frq / norm_term))
+
         sim_terms.sort(key=lambda x: x[1], reverse=True)
         return sim_terms
 

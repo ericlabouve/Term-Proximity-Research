@@ -1,60 +1,23 @@
 # Holds distance functions to compute distances between queries and documents
 # Eric LaBouve (elabouve@calpoly.edu)
 #
-# Process: Maximize boost on just Okapi in cran. Then tack onto main Okapi_mod equation.
-# Boosts: is_early_noun_adj @ infl=3.0 && is_adj_noun_linear_pairs @ infl=1.8
-#
-# DATASET = cran: query_limit=225, doc_limit=20, stemming_on=True
-# Unmodified Cosine: MAP=0.25144842545683216
-# Unmodified Okapi: MAP=0.25494314903429477
-# *is_eary MAP=0.2657067430393868,
-# is_early_noun MAP=0.2557234211457406, is_early_verb MAP=0.24309728665047647, is_early_adj MAP=0.25747784394004675, is_early_adv MAP=0.2544465841075828
-# *is_early_noun_adj MAP=0.26761057623165885
-# is_early_not_noun MAP=0.2546388563734556, is_early_not_verb MAP=0.2671928450317639, is_early_not_adj MAP=0.25136672688205836, is_early_not_adv MAP=0.2642443640019426
-# *is_early_not_verb_adv MAP=0.26671563603266807 <-? Should be very close to is_early_noun_adj (Might exist missed more p.o.s.'s)
-# is_eary_q MAP=0.23925568215473444, is_early_q_noun MAP=0.24206554021827026, is_early_q_verb MAP=0.2427258814417755
-# is_noun (I=1.1) MAP=0.2553366000643001
-# is_verb (I=1.1) MAP=0.2536578704799122
-# is_adj_noun_pairs (I=1.8): MAP=0.25654817087197906
-# is_adj_noun_pairs (I=2.0): MAP=0.25587828134811696
-# is_adv_verb_pairs (I=1.2): MAP=0.2550557616469074
-# is_adj_noun_pairs (I=1.8), is_adv_verb_pairs (I=1.2): MAP=0.25654817087197906
-# is_eary, is_adj_noun_pairs (I=1.8): MAP=0.26875021721497516 <-- WINNER, DELTA=0.0138
-# is_eary, is_adj_noun_pairs (I=1.8), is_adv_verb_pairs (I=1.2): MAP=0.26875021721497516
-# is_adj_noun_pairs_linear (m=0.0, b=1.8): MAP=0.2562593516853681, (m=-0.25, b=1.8): MAP=0.2561618793674165
-# XXXX is_adv_verb_pairs_linear (m=0.25, b=1.75): MAP=0.25463939144780834, (m=0.25, b=1.25): MAP=0.25463769093858907
-# [('is_adj_noun_pairs, infl=1.8', 0.2562593516853681), ('is_adj_noun_linear_pairs, infl=1.8, m=-.25', 0.2561618793674165), ('is_adj_noun_2gram, infl=2.0', 0.25587828134811696)]
-# [('is_early_noun_adj, infl=2.2', 0.26828000171419336), ('is_early_noun_adj, infl=1.8', 0.2682270490493831), ('is_early_noun_adj, infl=2.0', 0.26761057623165885)]
-# [('is_early_noun_adj, infl=2.8', 0.2697372618575758), ('is_early_noun_adj, infl=2.6', 0.269706340976655), ('is_early_noun_adj, infl=2.4', 0.26922002341522633)]
-# [('is_early_noun_adj, is_adj_noun_linear_pairs', 0.26878757900477657)]
-# [('is_close_pairs, close_pairs_influence=1.6', 0.23689959793912033), ('is_close_pairs, close_pairs_influence=1.4', 0.23418025401844592), ('is_close_pairs, close_pairs_influence=1.2', 0.2300814231511335)] [('is_close_pairs, close_pairs_influence=1.8', 0.2369096642859982), ('is_close_pairs, close_pairs_influence=2.0', 0.235438361323313), ('is_close_pairs, close_pairs_influence=2.2', 0.2337479801314114)]
-#
-#
-# DATASET = cran: query_limit=225, doc_limit=20, stemming_on=False
-# Unmodified Okapi: MAP=0.23963612749870844
-# is_eary MAP=0.2455933914749088
-# is_adj_noun_pairs: MAP=0.23666999367828484, Influence=1.8
-# is_eary and is_adj_noun_pairs: MAP=0.242043464756276, Influence=1.8
-#
-# DATASET = adi: query_limit=35, doc_limit=20, stemming_on=True
-# Unmodified Cosine: MAP=0.32751815084933983
-# Unmodified Okapi: MAP=0.3273929643293058
-# is_eary: MAP=0.3424331689001217
-# is_adj_noun_pairs (I=1.8): MAP=0.34269184325600427 <-- WINNER, DELTA=0.0152
-# is_eary, is_adj_noun_pairs (I=1.8): MAP=0.3338557316487712 <-- DELTA=0.0064
-# [('is_adj_noun_2gram, infl=2.0', 0.3430093035734646), ('is_adj_noun_linear_pairs, infl=1.8, m=-.25', 0.3430093035734646), ('is_adj_noun_pairs, infl=1.8', 0.34269184325600427)]
-# [('is_early_noun_adj, is_adj_noun_linear_pairs', 0.36749757713114145)]
+# DATASET = cran: query_limit=225, doc_limit=None, stemming_on=True
+# Unmodified Cosine:                                                MAP=0.280012462116408
+# Unmodified Okapi:                                                 MAP=0.2811472330446242
+# is_early_noun_adj I=2.4                                           MAP=0.2952156184300021
+# is_early_noun_adj I=2.4, is_adj_noun_linear_pairs b=1.5           MAP=0.2959890583731966
 
-#
-# DATASET = med: query_limit=30, doc_limit=20, stemming_on=True
-# Unmodified Cosine: MAP=0.38147482244846503
-# Unmodified Okapi: MAP=0.40037481693662885
-# is_eary=True: MAP=0.4149885390725527 <-- WINNER, DELTA=0.0146
-# is_adj_noun_pairs=True (I=1.8): MAP=0.3970159388030086
-# is_eary=True, is_adj_noun_pairs=True (I=1.8): MAP=0.41485829343665276 <-- DELTA=0.0144
-# [('is_adj_noun_pairs, infl=1.8', 0.3970159388030086), ('is_adj_noun_linear_pairs, infl=1.8, m=-.25', 0.3963426788456155), ('is_adj_noun_2gram, infl=2.0', 0.39250962655962657)]
-# [('is_early_noun_adj, infl=3.0', 0.41276317041038524), ('is_early_noun_adj, infl=3.2', 0.41133315662653996), ('is_early_noun_adj, infl=2.8', 0.4112554860113274), ('is_early_noun_adj, infl=3.4', 0.41085480310135364), ('is_early_noun_adj, infl=3.6', 0.4093309793157536), ('is_early_noun_adj, infl=3.8', 0.4088113639652844)]
-# [('is_early_noun_adj, is_adj_noun_linear_pairs', 0.41059342467786597)]
+# DATASET = adi: query_limit=35, doc_limit=None, stemming_on=True
+# Unmodified Cosine:                                                MAP=0.3731938811079862
+# Unmodified Okapi:                                                 MAP=0.3782581975783929
+# is_early_noun_adj I=2.4                                           MAP=0.40435711100843064
+# is_early_noun_adj I=2.4, is_adj_noun_linear_pairs b=1.5           MAP=0.40435711100843064
+
+# DATASET = med: query_limit=30, doc_limit=None, stemming_on=True
+# Unmodified Cosine:                                                MAP=0.5302462663875682
+# Unmodified Okapi:                                                 MAP=0.5353128722733899
+# is_early_noun_adj I=2.4                                           MAP=0.541351091646442
+# is_early_noun_adj I=2.4, is_adj_noun_linear_pairs b=1.5           MAP=0.541373479735338
 
 
 import math
@@ -83,15 +46,19 @@ class DistanceFunction:
 # This TextVector is intended to be a query
 # documents is a VectorCollection
 # dist_obj is an object that holds a distance function
-# doc_limit - An upper limit for the number of document ids returned per query
-def find_closest_docs(documents: VectorCollection, dist_obj: DistanceFunction, doc_limit=20) -> list:
+# doc_limit - An upper limit for the number of document ids returned per query.
+#             Negative value indicates that all documents should be used.
+def find_closest_docs(documents: VectorCollection, dist_obj: DistanceFunction, doc_limit=-1) -> list:
     ranked_docs = []  # Holds (doc id, distance)
     for docid, docvector in documents.id_to_textvector.items():
         dist_obj.set_doc(docvector)
         dist = dist_obj.execute()
         ranked_docs.append((docid, dist))
     ranked_docs.sort(key=lambda x: x[1], reverse=True)
-    return [x[0] for x in ranked_docs][0:doc_limit]
+    ranked_docs = [x[0] for x in ranked_docs]
+    if doc_limit > 0:
+        return ranked_docs[0:doc_limit]
+    return ranked_docs
 
 
 # ______________________ Cosine Functions ______________________
@@ -200,16 +167,20 @@ class OkapiFunction(DistanceFunction):
 
 class OkapiModFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection,
-                 is_early=False, is_early_noun=False, is_early_verb=False, is_early_adj=False, is_early_adv=False, early_term_influence=3.0,
+                 is_early=False, is_early_noun=False, is_early_verb=False, is_early_adj=False, is_early_adv=False, early_term_influence=2.4,
                  is_early_noun_adj=False,
                  is_early_not_noun=False, is_early_not_verb=False, is_early_not_adj=False, is_early_not_adv=False,
                  is_early_not_verb_adv=False,
+
                  is_early_q=False, is_early_q_noun=False, is_early_q_verb=False,
+
                  is_close_pairs=False, close_pairs_influence=2.0,
+
                  is_noun=False, noun_influence=1.0,
                  is_verb=False, verb_influence=1.0,
+
                  is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8, is_adj_noun_2gram=False, adj_noun_2gram_influence=2.0,
-                 is_adj_noun_linear_pairs=False, adj_noun_pairs_m=-0.25, adj_noun_pairs_b=1.8,
+                 is_adj_noun_linear_pairs=False, adj_noun_pairs_m=-0.25, adj_noun_pairs_b=1.5,
                  is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
                  is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25):
 
