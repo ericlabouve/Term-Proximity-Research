@@ -214,6 +214,8 @@ class WordNet:
     # Combines tuples that stem to the same term
     # Makes sure that terms are not stemmed to root_term
     def stem(self, stemmer, root_term, term_prob: list):
+        if root_term == 'humans':
+            pass
         d = defaultdict(float)
         l = []
         root_term = stemmer.stem(root_term)
@@ -223,7 +225,7 @@ class WordNet:
             d[stem] += prob
         # Create (term, probability) list
         for key, value in d.items():
-            if key is not root_term:
+            if key != root_term:
                 l += [(key, value)]
         l.sort(key=lambda x: x[1], reverse=True)
         return l

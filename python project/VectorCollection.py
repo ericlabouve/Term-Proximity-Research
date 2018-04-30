@@ -97,43 +97,50 @@ class VectorCollection:
             sentence_num = 0
             next_sentence = False
             try:
-                split_text = re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text)
-                if len(split_text) > 0 and split_text[-1] == '':
-                    del split_text[-1]
-                if len(split_text) > 0 and split_text[0] == '':
-                    del split_text[0]
-                tagged_text = nltk.pos_tag(split_text)
+                tagged_text = self.tag_text(textvector_id)
                 # Loop through each vector term
-    #            for term in re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text):
                 for term, pos in tagged_text:
                     if '.' in term:
                         next_sentence = True
                     term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
                     if len(term) >= min_word_len:  # Satisfies min length
-                        non_stem_term = term
                         # Stem all terms
                         if stemming_on:
-                            term = self.stemmer.stem(term)
-                        # Include word substitutions if textvector is a query
-                        if type(textvector) == QueryVector:
-                            subs = self.wn.get_sim_terms_rw(non_stem_term)
-                            if stemming_on:
-                                textvector.terms_sub += self.wn.stem(self.stemmer, non_stem_term, subs)
-                            else:
-                                textvector.terms_sub += subs
+                            stem_term = self.stemmer.stem(term)
                         # If (stop words not on and term is not a stop word) or (stop words on)
-                        if (not stop_words_on and term not in self.stop_words) or stop_words_on:
-                            textvector.add_term(term)  # Add term to term_to_freq
-                            textvector.terms.append(term)
+                        if ((not stop_words_on) and (term not in self.stop_words)) or stop_words_on:
+                            # Expand if vector is a query
+                            self.expand_query(stemming_on, term, textvector)
+                            textvector.add_term(stem_term)  # Add term to term_to_freq
+                            textvector.terms.append(stem_term)
                             textvector.terms_pos.append(pos)
                             # Add term to inverted index
-                            self.add_to_inverted_index(textvector_id, term, cur_offset, sentence_num)
+                            self.add_to_inverted_index(textvector_id, stem_term, cur_offset, sentence_num)
                             cur_offset += 1
                     if next_sentence:
                         next_sentence = False
                         sentence_num += 1
             except IndexError:
                 print("Index Error at evaluate_vectors in VectorCollection")
+
+    # WordNet query term expansion
+    def expand_query(self, stemming_on, term, textvector):
+        # Include word substitutions if textvector is a query
+        if type(textvector) == QueryVector:
+            subs = self.wn.get_sim_terms_rw(term)
+            if stemming_on:
+                textvector.terms_sub.append(self.wn.stem(self.stemmer, term, subs))
+            else:
+                textvector.terms_sub.append(subs)
+
+    def tag_text(self, textvector_id):
+        split_text = re.split("[^a-zA-Z.]+", self.id_to_textvector[textvector_id].raw_text)
+        if len(split_text) > 0 and split_text[-1] == '':
+            del split_text[-1]
+        if len(split_text) > 0 and split_text[0] == '':
+            del split_text[0]
+        tagged_text = nltk.pos_tag(split_text)
+        return tagged_text
 
     def parse_documents(self, file_path: str, stop_words_on: bool, stemming_on: bool, min_word_len: int):
         # Read vectors into memory

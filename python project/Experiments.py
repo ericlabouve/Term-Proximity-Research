@@ -11,24 +11,26 @@ from multiprocessing import Process, Queue, Array, Manager
 
 
 
-if __name__ == "__main__":
-    # qry = "what problems of heat conduction in composite slabs have been solved so far ."
-    # [('what', 'WP'), ('problems', 'NNS'), ('of', 'IN'), ('heat', 'NN'), ('conduction', 'NN'), ('in', 'IN'), ('composite', 'JJ'), ('slabs', 'NNS'), ('have', 'VBP'), ('been', 'VBN'), ('solved', 'VBN'), ('so', 'RB'), ('far', 'RB'), ('.', '.')]
-    # text = nltk.word_tokenize(qry)
-    # print(nltk.pos_tag(text))
-
-    sum = 0
-    for a in [('resolv', 0.28651685393258425), ('solv', 0.18202247191011234), ('clear', 0.11910112359550562), ('unsolv', 0.04494382022471911), ('work', 0.043820224719101124), ('debt', 0.04157303370786517), ('unresolv', 0.03707865168539326), ('lick', 0.03595505617977528), ('solut', 0.02247191011235955), ('find', 0.017977528089887642), ('settl', 0.016853932584269662), ('wrought', 0.015730337078651686), ('equat', 0.011235955056179775), ('x', 0.008988764044943821), ('unsolubl', 0.008988764044943821), ('open-and-shut', 0.008988764044943821), ('boss', 0.007865168539325843), ('old', 0.006741573033707865), ('be', 0.006741573033707865), ('solvabl', 0.006741573033707865), ('solubl', 0.0056179775280898875), ('mean', 0.0056179775280898875), ('easili', 0.0056179775280898875), ('case', 0.0044943820224719105), ('situat', 0.0044943820224719105), ('understand', 0.0044943820224719105), ('problem', 0.0044943820224719105), ('puzzl', 0.0033707865168539327), ('exercis', 0.0033707865168539327), ('obviou', 0.0033707865168539327), ('insolv', 0.0033707865168539327), ('develop', 0.0033707865168539327), ('remain', 0.0033707865168539327), ('math', 0.0022471910112359553), ('task', 0.0022471910112359553), ('decid', 0.0022471910112359553), ('capabl', 0.0022471910112359553), ('exampl', 0.0011235955056179776), ('skill', 0.0011235955056179776), ('suscept', 0.0011235955056179776), ('mani', 0.0011235955056179776), ('unpleas', 0.0011235955056179776)]:
-        sum += a[1]
-    print(sum)
-    print(len([('resolved', 0.20674157303370785), ('solve', 0.09213483146067415), ('solving', 0.0898876404494382), ('clearing', 0.046067415730337076), ('debt', 0.04157303370786517), ('unsolved', 0.04157303370786517), ('resolving', 0.04044943820224719), ('clear', 0.03707865168539326), ('unresolved', 0.035955056179775284), ('cleared', 0.035955056179775284), ('resolve', 0.03146067415730337), ('solution', 0.02247191011235955), ('works', 0.020224719101123594), ('work', 0.019101123595505618), ('find', 0.017977528089887642), ('settle', 0.016853932584269662), ('wrought', 0.015730337078651686), ('licked', 0.014606741573033709), ('lick', 0.01348314606741573), ('equation', 0.011235955056179775), ('x', 0.008988764044943821), ('open-and-shut', 0.008988764044943821), ('unsoluble', 0.008988764044943821), ('boss', 0.007865168539325843), ('resolvable', 0.007865168539325843), ('licking', 0.007865168539325843), ('solvable', 0.006741573033707865), ('old', 0.006741573033707865), ('being', 0.006741573033707865), ('soluble', 0.0056179775280898875), ('easily', 0.0056179775280898875), ('meaning', 0.0056179775280898875), ('understand', 0.0044943820224719105), ('working', 0.0044943820224719105), ('situation', 0.0044943820224719105), ('case', 0.0044943820224719105), ('problem', 0.0044943820224719105), ('exercise', 0.0033707865168539327), ('puzzle', 0.0033707865168539327), ('obvious', 0.0033707865168539327), ('develop', 0.0033707865168539327), ('remain', 0.0033707865168539327), ('insolvable', 0.0033707865168539327), ('unsolvable', 0.0033707865168539327), ('capable', 0.0022471910112359553), ('task', 0.0022471910112359553), ('math', 0.0022471910112359553), ('decided', 0.0022471910112359553), ('example', 0.0011235955056179776), ('skill', 0.0011235955056179776), ('many', 0.0011235955056179776), ('unpleasant', 0.0011235955056179776), ('unresolvable', 0.0011235955056179776), ('susceptible', 0.0011235955056179776)]))
-    print(len([('resolv', 0.28651685393258425), ('solv', 0.18202247191011234), ('clear', 0.11910112359550562), ('unsolv', 0.04494382022471911), ('work', 0.043820224719101124), ('debt', 0.04157303370786517), ('unresolv', 0.03707865168539326), ('lick', 0.03595505617977528), ('solut', 0.02247191011235955), ('find', 0.017977528089887642), ('settl', 0.016853932584269662), ('wrought', 0.015730337078651686), ('equat', 0.011235955056179775), ('x', 0.008988764044943821), ('unsolubl', 0.008988764044943821), ('open-and-shut', 0.008988764044943821), ('boss', 0.007865168539325843), ('old', 0.006741573033707865), ('be', 0.006741573033707865), ('solvabl', 0.006741573033707865), ('solubl', 0.0056179775280898875), ('mean', 0.0056179775280898875), ('easili', 0.0056179775280898875), ('case', 0.0044943820224719105), ('situat', 0.0044943820224719105), ('understand', 0.0044943820224719105), ('problem', 0.0044943820224719105), ('puzzl', 0.0033707865168539327), ('exercis', 0.0033707865168539327), ('obviou', 0.0033707865168539327), ('insolv', 0.0033707865168539327), ('develop', 0.0033707865168539327), ('remain', 0.0033707865168539327), ('math', 0.0022471910112359553), ('task', 0.0022471910112359553), ('decid', 0.0022471910112359553), ('capabl', 0.0022471910112359553), ('exampl', 0.0011235955056179776), ('skill', 0.0011235955056179776), ('suscept', 0.0011235955056179776), ('mani', 0.0011235955056179776), ('unpleas', 0.0011235955056179776)]))
+if __name__ == "__main0__":
+    qry = "the crystalline lens in vertebrates, including humans"
+    text = nltk.word_tokenize(qry)
+    tagged = nltk.pos_tag(text)
+    print(tagged)
 
     wn = WordNet()
-    list = wn.get_sim_terms_rw('solved')
-    print(list)
-    print(wn.stem(PorterStemmer(), 'solved', list))
-    # print(wn.get_syns(('solved', 'VBN')))
+    ps = PorterStemmer()
+    for word in text:
+        print(word + ' --> ' + ps.stem(word))
+
+        list = wn.get_sim_terms_rw(word)
+        print(list)
+        print(wn.stem(ps, word, list))
+        print()
+
+    # sum = 0
+    # for a in [('resolv', 0.28651685393258425), ('solv', 0.18202247191011234), ('clear', 0.11910112359550562), ('unsolv', 0.04494382022471911), ('work', 0.043820224719101124), ('debt', 0.04157303370786517), ('unresolv', 0.03707865168539326), ('lick', 0.03595505617977528), ('solut', 0.02247191011235955), ('find', 0.017977528089887642), ('settl', 0.016853932584269662), ('wrought', 0.015730337078651686), ('equat', 0.011235955056179775), ('x', 0.008988764044943821), ('unsolubl', 0.008988764044943821), ('open-and-shut', 0.008988764044943821), ('boss', 0.007865168539325843), ('old', 0.006741573033707865), ('be', 0.006741573033707865), ('solvabl', 0.006741573033707865), ('solubl', 0.0056179775280898875), ('mean', 0.0056179775280898875), ('easili', 0.0056179775280898875), ('case', 0.0044943820224719105), ('situat', 0.0044943820224719105), ('understand', 0.0044943820224719105), ('problem', 0.0044943820224719105), ('puzzl', 0.0033707865168539327), ('exercis', 0.0033707865168539327), ('obviou', 0.0033707865168539327), ('insolv', 0.0033707865168539327), ('develop', 0.0033707865168539327), ('remain', 0.0033707865168539327), ('math', 0.0022471910112359553), ('task', 0.0022471910112359553), ('decid', 0.0022471910112359553), ('capabl', 0.0022471910112359553), ('exampl', 0.0011235955056179776), ('skill', 0.0011235955056179776), ('suscept', 0.0011235955056179776), ('mani', 0.0011235955056179776), ('unpleas', 0.0011235955056179776)]:
+    #     sum += a[1]
+    # print(sum)
 
 
 def run(queue, okapi_func, label):
@@ -36,18 +38,18 @@ def run(queue, okapi_func, label):
     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
     queue.append((label, okapi_mod_avg_map))
 
-if __name__ == "__main0__":
-    docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
-    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
-    relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
+if __name__ == "__main__":
+    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
+    # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
 
     # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.ALL", VectorType.DOCUMENTS, stemming_on=True)
     # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.QRY", VectorType.QUERIES, stemming_on=True)
     # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.REL", 0, 0)  # DIFFERENT FORMAT
 
-    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
-    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
-    # relevant_docs = score_fs.read_human_judgement_MED("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
+    docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
+    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
+    relevant_docs = score_fs.read_human_judgement_MED("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
 
     # docs.normalize(docs)
     # qrys.normalize(docs)

@@ -1,6 +1,8 @@
 # Holds distance functions to compute distances between queries and documents
 # Eric LaBouve (elabouve@calpoly.edu)
 #
+# WILL NEED TO RECOMPUTE ALL THESE BECAUSE NOT ALL STOP WORDS WERE BEING FILTERED :(
+#
 # DATASET = cran: query_limit=225, doc_limit=None, stemming_on=True
 # Unmodified Cosine:                                                MAP=0.280012462116408
 # Unmodified Okapi:                                                 MAP=0.2811472330446242
