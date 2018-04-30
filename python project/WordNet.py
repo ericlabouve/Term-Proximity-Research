@@ -210,6 +210,25 @@ class WordNet:
                         synonyms.append(word)
         return synonyms
 
+    # Stems all terms in the term_prob tuple list
+    # Combines tuples that stem to the same term
+    # Makes sure that terms are not stemmed to root_term
+    def stem(self, stemmer, root_term, term_prob: list):
+        d = defaultdict(float)
+        l = []
+        root_term = stemmer.stem(root_term)
+        # Stem all terms
+        for term, prob in term_prob:
+            stem = stemmer.stem(term)
+            d[stem] += prob
+        # Create (term, probability) list
+        for key, value in d.items():
+            if key is not root_term:
+                l += [(key, value)]
+        l.sort(key=lambda x: x[1], reverse=True)
+        return l
+
+
 """
 POS tag list:
 

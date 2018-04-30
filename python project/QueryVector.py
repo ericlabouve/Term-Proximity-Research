@@ -9,6 +9,8 @@ class QueryVector(TextVector):
 
     def __init__(self):
         super().__init__()
+        # List of all filtered text vector terms' similar terms from WordNet
+        self.terms_sub = []
 
     def __repr__(self):
         return super().__repr__()

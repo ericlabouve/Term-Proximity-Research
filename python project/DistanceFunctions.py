@@ -182,7 +182,9 @@ class OkapiModFunction(DistanceFunction):
                  is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8, is_adj_noun_2gram=False, adj_noun_2gram_influence=2.0,
                  is_adj_noun_linear_pairs=False, adj_noun_pairs_m=-0.25, adj_noun_pairs_b=1.5,
                  is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
-                 is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25):
+                 is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25,
+
+                 is_sub_all=False, sub_prob=0.05):
 
         super().__init__(vector_collection)
         # Okapi variables
@@ -232,6 +234,9 @@ class OkapiModFunction(DistanceFunction):
         self.adv_verb_pairs_influence = adv_verb_pairs_influence
         self.adv_verb_pairs_m = adv_verb_pairs_m
         self.adv_verb_pairs_b = adv_verb_pairs_b
+        # Word substitutions from WordNet
+        self.is_sub_all = is_sub_all
+        self.sub_prob = sub_prob
 
     def execute(self) -> float:
         okapi_sum = 0

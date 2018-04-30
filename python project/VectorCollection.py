@@ -8,6 +8,7 @@ from Posting import Posting
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from collections import defaultdict
+from WordNet import WordNet
 import DistanceFunctions as dist_fs
 import re, sys, nltk
 
@@ -47,6 +48,8 @@ class VectorCollection:
         self.term_to_postings = defaultdict(dict)
         # Initialize Stemmer
         self.stemmer = PorterStemmer()
+        # Initialize WordNet
+        self.wn = WordNet()
         # Parse Documents or Queries
         if vector_type == VectorType.DOCUMENTS:
             self.parse_documents(file_path, stop_words_on, stemming_on, min_word_len)
@@ -107,8 +110,17 @@ class VectorCollection:
                         next_sentence = True
                     term = re.sub(r'[^\w\s]', '', term.lower())  # Remove punctuation
                     if len(term) >= min_word_len:  # Satisfies min length
+                        non_stem_term = term
+                        # Stem all terms
                         if stemming_on:
                             term = self.stemmer.stem(term)
+                        # Include word substitutions if textvector is a query
+                        if type(textvector) == QueryVector:
+                            subs = self.wn.get_sim_terms_rw(non_stem_term)
+                            if stemming_on:
+                                textvector.terms_sub += self.wn.stem(self.stemmer, non_stem_term, subs)
+                            else:
+                                textvector.terms_sub += subs
                         # If (stop words not on and term is not a stop word) or (stop words on)
                         if (not stop_words_on and term not in self.stop_words) or stop_words_on:
                             textvector.add_term(term)  # Add term to term_to_freq

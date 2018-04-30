@@ -14,8 +14,8 @@
       <file leaf-file-name="Experiments.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Experiments.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="168">
-              <caret line="19" column="4" lean-forward="false" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
+            <state relative-caret-position="205">
+              <caret line="23" column="4" lean-forward="false" selection-start-line="23" selection-start-column="4" selection-end-line="23" selection-end-column="4" />
               <folding>
                 <element signature="e#78#113#0" expanded="true" />
               </folding>
@@ -36,11 +36,9 @@
       <file leaf-file-name="VectorCollection.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/VectorCollection.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2700">
-              <caret line="188" column="8" lean-forward="false" selection-start-line="188" selection-start-column="8" selection-end-line="188" selection-end-column="8" />
-              <folding>
-                <element signature="e#123#144#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="153">
+              <caret line="9" column="24" lean-forward="true" selection-start-line="9" selection-start-column="24" selection-end-line="9" selection-end-column="24" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -48,8 +46,8 @@
       <file leaf-file-name="WordNet.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/WordNet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="139" column="0" lean-forward="false" selection-start-line="139" selection-start-column="0" selection-end-line="139" selection-end-column="0" />
+            <state relative-caret-position="252">
+              <caret line="228" column="16" lean-forward="true" selection-start-line="228" selection-start-column="16" selection-end-line="228" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -59,7 +57,7 @@
         <entry file="file://$PROJECT_DIR$/TextVector.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="270">
-              <caret line="18" column="22" lean-forward="false" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="22" />
+              <caret line="18" column="27" lean-forward="false" selection-start-line="18" selection-start-column="27" selection-end-line="18" selection-end-column="27" />
               <folding />
             </state>
           </provider>
@@ -78,8 +76,8 @@
       <file leaf-file-name="QueryVector.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/QueryVector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="7" column="25" lean-forward="false" selection-start-line="7" selection-start-column="25" selection-end-line="7" selection-end-column="25" />
+            <state relative-caret-position="165">
+              <caret line="12" column="22" lean-forward="false" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="22" />
               <folding />
             </state>
           </provider>
@@ -88,8 +86,8 @@
       <file leaf-file-name="DistanceFunctions.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/DistanceFunctions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" column="77" lean-forward="false" selection-start-line="19" selection-start-column="77" selection-end-line="19" selection-end-column="77" />
+            <state relative-caret-position="63">
+              <caret line="238" column="32" lean-forward="false" selection-start-line="238" selection-start-column="32" selection-end-line="238" selection-end-column="32" />
               <folding>
                 <element signature="e#1768#1789#0" expanded="false" />
                 <element signature="e#1846#1863#0" expanded="false" />
@@ -105,14 +103,14 @@
                 <element signature="e#4415#4467#0" expanded="false" />
                 <element signature="e#5627#5844#0" expanded="false" />
                 <element signature="e#6370#7000#0" expanded="false" />
-                <element signature="e#16999#17041#0" expanded="false" />
-                <element signature="e#19287#19441#0" expanded="false" />
-                <element signature="e#19605#20666#0" expanded="false" />
-                <element signature="e#22972#23047#0" expanded="false" />
-                <element signature="e#23150#24172#0" expanded="false" />
-                <element signature="e#23193#23250#0" expanded="false" />
-                <element signature="e#23397#24151#0" expanded="false" />
-                <element signature="e#23997#24151#0" expanded="false" />
+                <element signature="e#17162#17204#0" expanded="false" />
+                <element signature="e#19450#19604#0" expanded="false" />
+                <element signature="e#19768#20829#0" expanded="false" />
+                <element signature="e#23135#23210#0" expanded="false" />
+                <element signature="e#23313#24335#0" expanded="false" />
+                <element signature="e#23356#23413#0" expanded="false" />
+                <element signature="e#23560#24314#0" expanded="false" />
+                <element signature="e#24160#24314#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -129,9 +127,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>stop_words</find>
-      <find>stop_words_on</find>
-      <find>cur_query_idx</find>
       <find>get_doc_freq</find>
       <find>pos</find>
       <find>speed</find>
@@ -159,6 +154,9 @@
       <find>doc_limit</find>
       <find>is_early_noun_adj</find>
       <find>adj_noun_pairs_linear</find>
+      <find>obvi</find>
+      <find>obviou</find>
+      <find>parse_queries</find>
     </findStrings>
     <replaceStrings>
       <replace>boosts.append(b</replace>
@@ -168,13 +166,13 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Posting.py" />
-        <option value="$PROJECT_DIR$/QueryVector.py" />
         <option value="$PROJECT_DIR$/DocumentVector.py" />
-        <option value="$PROJECT_DIR$/TextVector.py" />
-        <option value="$PROJECT_DIR$/VectorCollection.py" />
         <option value="$PROJECT_DIR$/ScoringFunctions.py" />
         <option value="$APPLICATION_CONFIG_DIR$/pycharm.vmoptions" />
         <option value="$PROJECT_DIR$/DistanceFunctions.py" />
+        <option value="$PROJECT_DIR$/TextVector.py" />
+        <option value="$PROJECT_DIR$/QueryVector.py" />
+        <option value="$PROJECT_DIR$/VectorCollection.py" />
         <option value="$PROJECT_DIR$/WordNet.py" />
         <option value="$PROJECT_DIR$/Experiments.py" />
       </list>
@@ -264,7 +262,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32933334" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16666667" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16666667" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -288,8 +286,8 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/WordNet.py</url>
-          <line>139</line>
-          <option name="timeStamp" value="108" />
+          <line>228</line>
+          <option name="timeStamp" value="111" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -299,7 +297,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="109" />
+      <option name="time" value="112" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -318,9 +316,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2700">
           <caret line="188" column="8" lean-forward="false" selection-start-line="188" selection-start-column="8" selection-end-line="188" selection-end-column="8" />
-          <folding>
-            <element signature="e#123#144#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -383,14 +379,14 @@
             <element signature="e#4415#4467#0" expanded="false" />
             <element signature="e#5627#5844#0" expanded="false" />
             <element signature="e#6370#7000#0" expanded="false" />
-            <element signature="e#16999#17041#0" expanded="false" />
-            <element signature="e#19287#19441#0" expanded="false" />
-            <element signature="e#19605#20666#0" expanded="false" />
-            <element signature="e#22972#23047#0" expanded="false" />
-            <element signature="e#23150#24172#0" expanded="false" />
-            <element signature="e#23193#23250#0" expanded="false" />
-            <element signature="e#23397#24151#0" expanded="false" />
-            <element signature="e#23997#24151#0" expanded="false" />
+            <element signature="e#17162#17204#0" expanded="false" />
+            <element signature="e#19450#19604#0" expanded="false" />
+            <element signature="e#19768#20829#0" expanded="false" />
+            <element signature="e#23135#23210#0" expanded="false" />
+            <element signature="e#23313#24335#0" expanded="false" />
+            <element signature="e#23356#23413#0" expanded="false" />
+            <element signature="e#23560#24314#0" expanded="false" />
+            <element signature="e#24160#24314#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -417,9 +413,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2700">
           <caret line="188" column="8" lean-forward="false" selection-start-line="188" selection-start-column="8" selection-end-line="188" selection-end-column="8" />
-          <folding>
-            <element signature="e#123#144#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -474,14 +468,14 @@
             <element signature="e#4415#4467#0" expanded="false" />
             <element signature="e#5627#5844#0" expanded="false" />
             <element signature="e#6370#7000#0" expanded="false" />
-            <element signature="e#16999#17041#0" expanded="false" />
-            <element signature="e#19287#19441#0" expanded="false" />
-            <element signature="e#19605#20666#0" expanded="false" />
-            <element signature="e#22972#23047#0" expanded="false" />
-            <element signature="e#23150#24172#0" expanded="false" />
-            <element signature="e#23193#23250#0" expanded="false" />
-            <element signature="e#23397#24151#0" expanded="false" />
-            <element signature="e#23997#24151#0" expanded="false" />
+            <element signature="e#17162#17204#0" expanded="false" />
+            <element signature="e#19450#19604#0" expanded="false" />
+            <element signature="e#19768#20829#0" expanded="false" />
+            <element signature="e#23135#23210#0" expanded="false" />
+            <element signature="e#23313#24335#0" expanded="false" />
+            <element signature="e#23356#23413#0" expanded="false" />
+            <element signature="e#23560#24314#0" expanded="false" />
+            <element signature="e#24160#24314#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -515,9 +509,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2700">
           <caret line="188" column="8" lean-forward="false" selection-start-line="188" selection-start-column="8" selection-end-line="188" selection-end-column="8" />
-          <folding>
-            <element signature="e#123#144#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -572,14 +564,14 @@
             <element signature="e#4415#4467#0" expanded="false" />
             <element signature="e#5627#5844#0" expanded="false" />
             <element signature="e#6370#7000#0" expanded="false" />
-            <element signature="e#16999#17041#0" expanded="false" />
-            <element signature="e#19287#19441#0" expanded="false" />
-            <element signature="e#19605#20666#0" expanded="false" />
-            <element signature="e#22972#23047#0" expanded="false" />
-            <element signature="e#23150#24172#0" expanded="false" />
-            <element signature="e#23193#23250#0" expanded="false" />
-            <element signature="e#23397#24151#0" expanded="false" />
-            <element signature="e#23997#24151#0" expanded="false" />
+            <element signature="e#17162#17204#0" expanded="false" />
+            <element signature="e#19450#19604#0" expanded="false" />
+            <element signature="e#19768#20829#0" expanded="false" />
+            <element signature="e#23135#23210#0" expanded="false" />
+            <element signature="e#23313#24335#0" expanded="false" />
+            <element signature="e#23356#23413#0" expanded="false" />
+            <element signature="e#23560#24314#0" expanded="false" />
+            <element signature="e#24160#24314#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -595,9 +587,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2790">
           <caret line="194" column="12" lean-forward="false" selection-start-line="194" selection-start-column="12" selection-end-line="194" selection-end-column="12" />
-          <folding>
-            <element signature="e#123#144#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -662,14 +652,14 @@
             <element signature="e#4415#4467#0" expanded="false" />
             <element signature="e#5627#5844#0" expanded="false" />
             <element signature="e#6370#7000#0" expanded="false" />
-            <element signature="e#16999#17041#0" expanded="false" />
-            <element signature="e#19287#19441#0" expanded="false" />
-            <element signature="e#19605#20666#0" expanded="false" />
-            <element signature="e#22972#23047#0" expanded="false" />
-            <element signature="e#23150#24172#0" expanded="false" />
-            <element signature="e#23193#23250#0" expanded="false" />
-            <element signature="e#23397#24151#0" expanded="false" />
-            <element signature="e#23997#24151#0" expanded="false" />
+            <element signature="e#17162#17204#0" expanded="false" />
+            <element signature="e#19450#19604#0" expanded="false" />
+            <element signature="e#19768#20829#0" expanded="false" />
+            <element signature="e#23135#23210#0" expanded="false" />
+            <element signature="e#23313#24335#0" expanded="false" />
+            <element signature="e#23356#23413#0" expanded="false" />
+            <element signature="e#23560#24314#0" expanded="false" />
+            <element signature="e#24160#24314#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -702,52 +692,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/QueryVector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="7" column="25" lean-forward="false" selection-start-line="7" selection-start-column="25" selection-end-line="7" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/TextVector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="22" lean-forward="false" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Posting.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="6" lean-forward="false" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Caches/PyCharmCE2017.2/python_stubs/-730671433/builtins.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="162">
           <caret line="556" column="4" lean-forward="false" selection-start-line="556" selection-start-column="4" selection-end-line="556" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ScoringFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="26" column="17" lean-forward="false" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/VectorCollection.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2700">
-          <caret line="188" column="8" lean-forward="false" selection-start-line="188" selection-start-column="8" selection-end-line="188" selection-end-column="8" />
-          <folding>
-            <element signature="e#123#144#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -760,8 +708,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/DistanceFunctions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="77" lean-forward="false" selection-start-line="19" selection-start-column="77" selection-end-line="19" selection-end-column="77" />
+        <state relative-caret-position="63">
+          <caret line="238" column="32" lean-forward="false" selection-start-line="238" selection-start-column="32" selection-end-line="238" selection-end-column="32" />
           <folding>
             <element signature="e#1768#1789#0" expanded="false" />
             <element signature="e#1846#1863#0" expanded="false" />
@@ -777,30 +725,70 @@
             <element signature="e#4415#4467#0" expanded="false" />
             <element signature="e#5627#5844#0" expanded="false" />
             <element signature="e#6370#7000#0" expanded="false" />
-            <element signature="e#16999#17041#0" expanded="false" />
-            <element signature="e#19287#19441#0" expanded="false" />
-            <element signature="e#19605#20666#0" expanded="false" />
-            <element signature="e#22972#23047#0" expanded="false" />
-            <element signature="e#23150#24172#0" expanded="false" />
-            <element signature="e#23193#23250#0" expanded="false" />
-            <element signature="e#23397#24151#0" expanded="false" />
-            <element signature="e#23997#24151#0" expanded="false" />
+            <element signature="e#17162#17204#0" expanded="false" />
+            <element signature="e#19450#19604#0" expanded="false" />
+            <element signature="e#19768#20829#0" expanded="false" />
+            <element signature="e#23135#23210#0" expanded="false" />
+            <element signature="e#23313#24335#0" expanded="false" />
+            <element signature="e#23356#23413#0" expanded="false" />
+            <element signature="e#23560#24314#0" expanded="false" />
+            <element signature="e#24160#24314#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ScoringFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="26" column="17" lean-forward="false" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/TextVector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="18" column="27" lean-forward="false" selection-start-line="18" selection-start-column="27" selection-end-line="18" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/QueryVector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="12" column="22" lean-forward="false" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Posting.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="6" column="6" lean-forward="false" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/VectorCollection.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="9" column="24" lean-forward="true" selection-start-line="9" selection-start-column="24" selection-end-line="9" selection-end-column="24" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/WordNet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="139" column="0" lean-forward="false" selection-start-line="139" selection-start-column="0" selection-end-line="139" selection-end-column="0" />
+        <state relative-caret-position="252">
+          <caret line="228" column="16" lean-forward="true" selection-start-line="228" selection-start-column="16" selection-end-line="228" selection-end-column="16" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Experiments.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="19" column="4" lean-forward="false" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
+        <state relative-caret-position="205">
+          <caret line="23" column="4" lean-forward="false" selection-start-line="23" selection-start-column="4" selection-end-line="23" selection-end-column="4" />
           <folding>
             <element signature="e#78#113#0" expanded="true" />
           </folding>

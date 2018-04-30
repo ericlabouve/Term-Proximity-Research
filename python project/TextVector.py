@@ -17,6 +17,7 @@ class TextVector:
         self.terms = []
         # List of all filtered text vector terms' part of speech
         self.terms_pos = []
+        # ID for this text vector
         self.id = 0
         # The number of terms in this textvector (loaded on request)
         self.length = None
