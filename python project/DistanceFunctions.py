@@ -1,6 +1,25 @@
 # Holds distance functions to compute distances between queries and documents
 # Eric LaBouve (elabouve@calpoly.edu)
 #
+# DATASET = cran: query_limit=225, doc_limit=None, stemming_on=True
+# Unmodified Cosine:                                                MAP=
+# Unmodified Okapi:                                                 MAP=
+# sub_all prob=0.10                                                 MAP=
+#
+# DATASET = adi: query_limit=35, doc_limit=None, stemming_on=True
+# Unmodified Cosine:                                                MAP=
+# Unmodified Okapi:                                                 MAP=
+# sub_all prob=0.10                                                 MAP=
+#
+# DATASET = med: query_limit=30, doc_limit=None, stemming_on=True
+# Unmodified Cosine:                                                MAP=
+# Unmodified Okapi:                                                 MAP=
+# sub_all prob=0.40                                                 MAP=0.5348136735114636
+#
+#
+#
+#
+#
 # WILL NEED TO RECOMPUTE ALL THESE BECAUSE NOT ALL STOP WORDS WERE BEING FILTERED :(
 #
 # DATASET = cran: query_limit=225, doc_limit=None, stemming_on=True
@@ -186,7 +205,7 @@ class OkapiModFunction(DistanceFunction):
                  is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
                  is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25,
 
-                 is_sub_all=False, sub_prob=0.05):
+                 is_sub_all=False, sub_prob=0.10):
 
         super().__init__(vector_collection)
         # Okapi variables
@@ -245,21 +264,14 @@ class OkapiModFunction(DistanceFunction):
         terms = []
         # Traverse query terms in order of how they appear
         # Do not want to double score the same term
-        for term, pos in zip(self.query.terms, self.query.terms_pos):
+        for term, pos, subs in zip(self.query.terms, self.query.terms_pos, self.query.terms_sub):
             product = 0
             if term not in terms:
-                dfi = self.vector_collection.get_doc_freq(term)
-                fij = self.doc.term_to_freq[term]
-                dlj = len(self.doc)
-                fiq = self.query.term_to_freq[term]
-                first_term = math.log((self.num_docs - dfi + 0.5) / (dfi + 0.5))
-                second_term = ((self.k1 + 1) * fij) / (self.k1 * (1 - self.b + self.b * dlj / self.avdl) + fij)
-                third_term = ((self.k2 + 1) * fiq) / (self.k2 + fiq)
-
-                product = first_term * second_term * third_term
+                product = self.okapi(term)
 
             # Independent collection of boosts
             boosts = []
+            sub_boosts = []  # Substitution boosts
             if self.is_early:
                 boosts.append(boost(product, self.early_term(term)))
             if self.is_early_noun:
@@ -335,9 +347,26 @@ class OkapiModFunction(DistanceFunction):
                 boosts.append(boost(product, self.adv_verb_pairs_linear(term, pos)))
                 self.last_term_pos = (term, pos)
 
+            if self.is_sub_all:
+                for sub_term, prob in subs:
+                    if prob > self.sub_prob:
+                        weight = self.okapi(sub_term) * prob
+                        sub_boosts.append(weight)
+
             terms.append(term)
-            okapi_sum += product + sum(boosts)
+            okapi_sum += product + sum(boosts) + sum(sub_boosts)
         return okapi_sum
+
+    def okapi(self, term):
+        dfi = self.vector_collection.get_doc_freq(term)
+        fij = self.doc.term_to_freq[term]
+        dlj = len(self.doc)
+        fiq = self.query.term_to_freq[term]
+        first_term = math.log((self.num_docs - dfi + 0.5) / (dfi + 0.5))
+        second_term = ((self.k1 + 1) * fij) / (self.k1 * (1 - self.b + self.b * dlj / self.avdl) + fij)
+        third_term = ((self.k2 + 1) * fiq) / (self.k2 + fiq)
+        product = first_term * second_term * third_term
+        return product
 
     # Boosts the query term's score if it is found earlier in the document
     # Compute as a percentage of the way through the document.

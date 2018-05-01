@@ -125,9 +125,12 @@ class WordNet:
         norm_term = 0
         # Get normalization term for next loop
         for sense_id, frq in freq.items():
-            sense = self.id_to_label_json[str(sense_id)]
-            if len(sense.split()) <= str_len:  # one word
-                norm_term += frq
+            try:
+                sense = self.id_to_label_json[str(sense_id)]
+                if len(sense.split()) <= str_len:  # one word
+                    norm_term += frq
+            except KeyError:
+                pass
 
         # Normalize all terms
         sim_terms = []
@@ -218,17 +221,25 @@ class WordNet:
             pass
         d = defaultdict(float)
         l = []
+        ln = []
         root_term = stemmer.stem(root_term)
         # Stem all terms
         for term, prob in term_prob:
             stem = stemmer.stem(term)
             d[stem] += prob
+
         # Create (term, probability) list
         for key, value in d.items():
             if key != root_term:
                 l += [(key, value)]
-        l.sort(key=lambda x: x[1], reverse=True)
-        return l
+
+        probs = [x[1] for x in l]
+        nsum = sum(probs)
+        # Normalize probabilities to add to one because some terms stem to the same value or the root term
+        for term, prob in l:
+            ln += [(term, prob / nsum)]
+        ln.sort(key=lambda x: x[1], reverse=True)
+        return ln
 
 
 """
