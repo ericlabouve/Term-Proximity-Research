@@ -28,7 +28,7 @@ class WordNet:
                   'VBP': 'v', 'VBZ': 'v'}
 
     def __init__(self):
-        self.json_base_dir = '/Users/Eric/Desktop/Thesis/programs/java/json/'
+        self.json_base_dir = '../json/'
         self.adj_list_json = json.load(open(self.json_base_dir + 'adjList.json'))
         self.edge_list_json = json.load(open(self.json_base_dir + 'edgeList.json'))
         self.id_to_label_json = json.load(open(self.json_base_dir + 'idToLabel.json'))

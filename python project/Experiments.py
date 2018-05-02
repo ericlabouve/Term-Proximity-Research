@@ -43,13 +43,21 @@ if __name__ == "__main__":
     # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
     # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
 
-    docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.ALL", VectorType.DOCUMENTS, stemming_on=True)
-    qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.QRY", VectorType.QUERIES, stemming_on=True)
-    relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.REL", 0, 0)  # DIFFERENT FORMAT
+    # docs = VectorCollection("../datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+    # qrys = VectorCollection("../datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
+    # relevant_docs = score_fs.read_human_judgement("../datasets/cran/cranqrel", 1, 3)
+
+    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.ALL", VectorType.DOCUMENTS, stemming_on=True)
+    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.QRY", VectorType.QUERIES, stemming_on=True)
+    # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.REL", 0, 0)  # DIFFERENT FORMAT
 
     # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
     # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
     # relevant_docs = score_fs.read_human_judgement_MED("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
+    docs = VectorCollection("../datasets/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
+    qrys = VectorCollection("../datasets/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
+    relevant_docs = score_fs.read_human_judgement_MED("../datasets/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
+
 
     # docs.normalize(docs)
     # qrys.normalize(docs)
