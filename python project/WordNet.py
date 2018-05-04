@@ -93,7 +93,7 @@ class WordNet:
         term_id = self.label_to_id_json[term]
         # Run simulation iterations number of times
         for i in range(iterations):
-            marked_node_ids = [term_id]
+            marked_node_ids = [term_id, -1]  # id:-1 does not exist in idToLabel.json
             sense_id = term_id  # Current node in WordNet
             for j in range(depth):
                 # Get adjacent sense ids
@@ -125,17 +125,17 @@ class WordNet:
         norm_term = 0
         # Get normalization term for next loop
         for sense_id, frq in freq.items():
-            try:
-                sense = self.id_to_label_json[str(sense_id)]
-                if len(sense.split()) <= str_len:  # one word
-                    norm_term += frq
-            except KeyError:
-                pass
+            sense = self.id_to_label_json[str(sense_id)]
+            if len(sense.split()) <= str_len:  # one word
+                norm_term += frq
 
         # Normalize all terms
         sim_terms = []
         for sense_id, frq in freq.items():
-            sense = self.id_to_label_json[str(sense_id)]
+            try:
+                sense = self.id_to_label_json[str(sense_id)]
+            except KeyError:
+                pass
             if len(sense.split()) <= str_len:  # one word
                 sim_terms.append((sense, frq / norm_term))
 

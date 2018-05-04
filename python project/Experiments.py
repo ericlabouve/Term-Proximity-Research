@@ -48,7 +48,7 @@ def run_save(func, func_name):
     map_file = out_dir + func_name + "_map.txt"
     with open(map_file, 'w') as f:
         f.write(str(avg_map))
-    print(func_name + ": " + str(avg_map))
+    print("\n" + func_name + ": " + str(avg_map))
 
 # _____________Functions for reading documents, queries and relevant documents_____________
 
@@ -86,11 +86,11 @@ def test_okapi():
 
 if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
-    rel_path = ".."
+    rel_path = "../datasets"
     f_path = abs_path
 #    docs, qrys, relevant_docs, dir = read_cran(f_path)
-#    docs, qrys, relevant_docs, dir = read_adi(f_path)
-    docs, qrys, relevant_docs, dir = read_med(f_path)
+    docs, qrys, relevant_docs, dir = read_adi(f_path)
+#    docs, qrys, relevant_docs, dir = read_med(f_path)
 
     m = Manager()
     q = m.list()
@@ -99,8 +99,8 @@ if __name__ == "__main__":
     process_list = []
     out_dir = "out/" + dir
 
-#    test_cosine()
-    test_okapi()
+    test_cosine()
+#    test_okapi()
 
     # Loop for running processes in parallel that differ by level of influence
     # influence = 0.10

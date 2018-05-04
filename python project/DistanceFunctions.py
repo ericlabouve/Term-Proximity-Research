@@ -8,7 +8,7 @@
 #
 # DATASET = adi: query_limit=35, doc_limit=None, stemming_on=True
 # Unmodified Cosine:                                                MAP=
-# Unmodified Okapi:                                                 MAP=
+# Unmodified Okapi:                                                 MAP=0.3789677267181438
 # sub_all prob=0.10                                                 MAP=
 #
 # DATASET = med: query_limit=30, doc_limit=None, stemming_on=True
