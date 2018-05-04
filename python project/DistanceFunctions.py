@@ -12,8 +12,8 @@
 # sub_all prob=0.10                                                 MAP=
 #
 # DATASET = med: query_limit=30, doc_limit=None, stemming_on=True
-# Unmodified Cosine:                                                MAP=
-# Unmodified Okapi:                                                 MAP=
+# Unmodified Cosine:                                                MAP=0.5299083680454879
+# Unmodified Okapi:                                                 MAP=0.5345275109699796
 # sub_all prob=0.40                                                 MAP=0.5348136735114636
 #
 #

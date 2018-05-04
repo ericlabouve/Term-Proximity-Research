@@ -38,43 +38,77 @@ def run(queue, okapi_func, label):
     okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
     queue.append((label, okapi_mod_avg_map))
 
+# Run the func, save the results to the file indicated by the path, and save the MAP score
+def run_save(func, func_name):
+    results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
+    avg_map = score_fs.compute_avg_map(results, relevant_docs)
+    results_file = out_dir + func_name + "_results.json"
+    with open(results_file, 'w') as f:
+        f.write(json.dumps(results))
+    map_file = out_dir + func_name + "_map.txt"
+    with open(map_file, 'w') as f:
+        f.write(str(avg_map))
+    print(func_name + ": " + str(avg_map))
+
+# _____________Functions for reading documents, queries and relevant documents_____________
+
+def read_cran(path):
+    docs = VectorCollection(path + "cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+    qrys = VectorCollection(path + "/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
+    relevant_docs = score_fs.read_human_judgement(path + "/cran/cranqrel", 1, 3)
+    return docs, qrys, relevant_docs, "cran/"
+
+def read_adi(path):
+    docs = VectorCollection(path + "/adi/ADI.ALL", VectorType.DOCUMENTS, stemming_on=True)
+    qrys = VectorCollection(path + "/adi/ADI.QRY", VectorType.QUERIES, stemming_on=True)
+    relevant_docs = score_fs.read_human_judgement(path + "/adi/ADI.REL", 0, 0)  # DIFFERENT FORMAT
+    return docs, qrys, relevant_docs, "adi/"
+
+def read_med(path):
+    docs = VectorCollection(path + "/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
+    qrys = VectorCollection(path + "/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
+    relevant_docs = score_fs.read_human_judgement_MED(path + "/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
+    return docs, qrys, relevant_docs, "med/"
+
+# __________________________ Tests _______________________________
+def test_cosine():
+    docs.normalize(docs)
+    qrys.normalize(docs)
+    cos_func = CosineFunction(docs)
+    run_save(cos_func, "cosine")
+
+def test_okapi():
+    okapi_func = OkapiFunction(docs)
+    run_save(okapi_func, "okapi")
+
+
+
+
 if __name__ == "__main__":
-    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
-    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
-    # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cranqrel", 1, 3)
-
-    # docs = VectorCollection("../datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
-    # qrys = VectorCollection("../datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
-    # relevant_docs = score_fs.read_human_judgement("../datasets/cran/cranqrel", 1, 3)
-
-    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.ALL", VectorType.DOCUMENTS, stemming_on=True)
-    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.QRY", VectorType.QUERIES, stemming_on=True)
-    # relevant_docs = score_fs.read_human_judgement("/Users/Eric/Desktop/Thesis/projects/datasets/adi/ADI.REL", 0, 0)  # DIFFERENT FORMAT
-
-    # docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
-    # qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
-    # relevant_docs = score_fs.read_human_judgement_MED("/Users/Eric/Desktop/Thesis/projects/datasets/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
-    docs = VectorCollection("../datasets/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
-    qrys = VectorCollection("../datasets/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
-    relevant_docs = score_fs.read_human_judgement_MED("../datasets/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
-
-
-    # docs.normalize(docs)
-    # qrys.normalize(docs)
+    abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
+    rel_path = ".."
+    f_path = abs_path
+#    docs, qrys, relevant_docs, dir = read_cran(f_path)
+#    docs, qrys, relevant_docs, dir = read_adi(f_path)
+    docs, qrys, relevant_docs, dir = read_med(f_path)
 
     m = Manager()
     q = m.list()
     query_limit = -1  # Use all queries
     doc_limit = -1  # Use all documents
     process_list = []
+    out_dir = "out/" + dir
+
+#    test_cosine()
+    test_okapi()
 
     # Loop for running processes in parallel that differ by level of influence
-    influence = 0.10
-    while influence >= 0.01:
-        okapi_func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
-        p = Process(target=run, args=(q, okapi_func, 'sub_all prob=' + str(influence)))
-        process_list.append(p)
-        influence -= 0.02
+    # influence = 0.10
+    # while influence >= 0.01:
+    #     okapi_func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
+    #     p = Process(target=run, args=(q, okapi_func, 'sub_all prob=' + str(influence)))
+    #     process_list.append(p)
+    #     influence -= 0.02
 
     # okapi_func1 = OkapiModFunction(docs, is_early_noun_adj=True, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=1.5)
     # okapi_func2 = OkapiModFunction(docs, is_sub_all=True)
@@ -83,18 +117,19 @@ if __name__ == "__main__":
     # process_list.append(p1)
     # process_list.append(p2)
 
-    # Start all processes
-    for p in process_list:
-        p.start()
-
-    # Wait for all processes to end
-    for p in process_list:
-        p.join()
+    # # Start all processes
+    # for p in process_list:
+    #     p.start()
+    #
+    # # Wait for all processes to end
+    # for p in process_list:
+    #     p.join()
 
     # Sort based on base MAP score and display stats
-    q = sorted(q, key=lambda x: x[1], reverse=True)
-    print()
-    print(q)
+    # q = sorted(q, key=lambda x: x[1], reverse=True)
+    # print()
+    # print(q)
+    print("Done")
 
 
 if __name__ == "__main0__":
