@@ -33,15 +33,24 @@ if __name__ == "__main0__":
     print(sum)
 
 
-def run(queue, okapi_func, label):
-    okapi_mod_results = qrys.find_closest_docs(docs, okapi_func, doc_limit=doc_limit, query_limit=query_limit)
-    okapi_mod_avg_map = score_fs.compute_avg_map(okapi_mod_results, relevant_docs)
-    queue.append((label, okapi_mod_avg_map))
+def run(queue, func, label):
+    results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
+    avg_map = score_fs.compute_avg_map(results, relevant_docs)
+    queue.append((label, avg_map, results))
 
 # Run the func, save the results to the file indicated by the path, and save the MAP score
 def run_save(func, func_name):
     results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
     avg_map = score_fs.compute_avg_map(results, relevant_docs)
+    results_file = out_dir + func_name + "_results.json"
+    with open(results_file, 'w') as f:
+        f.write(json.dumps(results))
+    map_file = out_dir + func_name + "_map.txt"
+    with open(map_file, 'w') as f:
+        f.write(str(avg_map))
+    print("\n" + func_name + ": " + str(avg_map))
+
+def save(func_name, results, avg_map):
     results_file = out_dir + func_name + "_results.json"
     with open(results_file, 'w') as f:
         f.write(json.dumps(results))
@@ -84,12 +93,15 @@ def test_okapi():
 # __________________________ Train _______________________________
 def train():
     # Loop for running processes in parallel that differ by level of influence
-    influence = 0.10
-    while influence >= 0.01:
-        okapi_func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
-        p = Process(target=run, args=(q, okapi_func, 'sub_all prob=' + str(influence)))
+    m = Manager()
+    q = m.list()
+    process_list = []
+    influence = 0.02
+    while influence <= 0.04:
+        func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
+        p = Process(target=run, args=(q, func, 'sub_all prob=' + str(influence)))
         process_list.append(p)
-        influence -= 0.02
+        influence += 0.02
 
     # Start all processes
     for p in process_list:
@@ -101,54 +113,28 @@ def train():
 
     # Sort based on base MAP score and display stats
     q = sorted(qu, key=lambda x: x[1], reverse=True)
-    print()
-    print(q)
+    print("\n" + str(q))
+    label, avg_map, results = q[0]
+    save(label, results, avg_map)
+
 
 if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = rel_path
-    docs, qrys, relevant_docs, dir = read_cran(f_path)
+#    docs, qrys, relevant_docs, dir = read_cran(f_path)
 #    docs, qrys, relevant_docs, dir = read_adi(f_path)
-#    docs, qrys, relevant_docs, dir = read_med(f_path)
+    docs, qrys, relevant_docs, dir = read_med(f_path)
 
-    m = Manager()
-    qu = m.list()
     query_limit = -1  # Use all queries
     doc_limit = -1  # Use all documents
-    process_list = []
     out_dir = "out/" + dir
 
-    test_cosine()
-    test_okapi()
+    #test_cosine()
+    #test_okapi()
 
-    # Loop for running processes in parallel that differ by level of influence
-    # influence = 0.10
-    # while influence >= 0.01:
-    #     okapi_func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
-    #     p = Process(target=run, args=(q, okapi_func, 'sub_all prob=' + str(influence)))
-    #     process_list.append(p)
-    #     influence -= 0.02
+    train()
 
-    # okapi_func1 = OkapiModFunction(docs, is_early_noun_adj=True, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=1.5)
-    # okapi_func2 = OkapiModFunction(docs, is_sub_all=True)
-    # p1 = Process(target=run, args=(q, okapi_func1, 'inf=1.5'))
-    # p2 = Process(target=run, args=(q, okapi_func2, 'sub all'))
-    # process_list.append(p1)
-    # process_list.append(p2)
-
-    # # Start all processes
-    # for p in process_list:
-    #     p.start()
-    #
-    # # Wait for all processes to end
-    # for p in process_list:
-    #     p.join()
-
-    # Sort based on base MAP score and display stats
-    # q = sorted(q, key=lambda x: x[1], reverse=True)
-    # print()
-    # print(q)
     print("Done")
 
 
