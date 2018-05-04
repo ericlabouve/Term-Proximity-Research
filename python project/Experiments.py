@@ -107,9 +107,9 @@ def train():
 if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
-    f_path = abs_path
-#    docs, qrys, relevant_docs, dir = read_cran(f_path)
-    docs, qrys, relevant_docs, dir = read_adi(f_path)
+    f_path = rel_path
+    docs, qrys, relevant_docs, dir = read_cran(f_path)
+#    docs, qrys, relevant_docs, dir = read_adi(f_path)
 #    docs, qrys, relevant_docs, dir = read_med(f_path)
 
     m = Manager()
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     out_dir = "out/" + dir
 
     test_cosine()
-#    test_okapi()
+    test_okapi()
 
     # Loop for running processes in parallel that differ by level of influence
     # influence = 0.10

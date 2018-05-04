@@ -2,8 +2,8 @@
 # Eric LaBouve (elabouve@calpoly.edu)
 #
 # DATASET = cran: query_limit=225, doc_limit=None, stemming_on=True
-# Unmodified Cosine:                                                MAP=
-# Unmodified Okapi:                                                 MAP=
+# Unmodified Cosine:                                                MAP=0.28156330866837304
+# Unmodified Okapi:                                                 MAP=0.28192613853461285
 # sub_all prob=0.10                                                 MAP=
 #
 # DATASET = adi: query_limit=35, doc_limit=None, stemming_on=True
