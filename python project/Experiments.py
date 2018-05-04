@@ -53,7 +53,7 @@ def run_save(func, func_name):
 # _____________Functions for reading documents, queries and relevant documents_____________
 
 def read_cran(path):
-    docs = VectorCollection(path + "cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+    docs = VectorCollection(path + "/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection(path + "/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
     relevant_docs = score_fs.read_human_judgement(path + "/cran/cranqrel", 1, 3)
     return docs, qrys, relevant_docs, "cran/"
@@ -81,8 +81,28 @@ def test_okapi():
     okapi_func = OkapiFunction(docs)
     run_save(okapi_func, "okapi")
 
+# __________________________ Train _______________________________
+def train():
+    # Loop for running processes in parallel that differ by level of influence
+    influence = 0.10
+    while influence >= 0.01:
+        okapi_func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
+        p = Process(target=run, args=(q, okapi_func, 'sub_all prob=' + str(influence)))
+        process_list.append(p)
+        influence -= 0.02
 
+    # Start all processes
+    for p in process_list:
+        p.start()
 
+    # Wait for all processes to end
+    for p in process_list:
+        p.join()
+
+    # Sort based on base MAP score and display stats
+    q = sorted(qu, key=lambda x: x[1], reverse=True)
+    print()
+    print(q)
 
 if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
@@ -93,7 +113,7 @@ if __name__ == "__main__":
 #    docs, qrys, relevant_docs, dir = read_med(f_path)
 
     m = Manager()
-    q = m.list()
+    qu = m.list()
     query_limit = -1  # Use all queries
     doc_limit = -1  # Use all documents
     process_list = []
