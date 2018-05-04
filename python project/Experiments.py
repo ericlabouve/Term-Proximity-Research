@@ -53,7 +53,7 @@ def run_save(func, func_name):
 # _____________Functions for reading documents, queries and relevant documents_____________
 
 def read_cran(path):
-    docs = VectorCollection(path + "cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+    docs = VectorCollection(path + "/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection(path + "/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
     relevant_docs = score_fs.read_human_judgement(path + "/cran/cranqrel", 1, 3)
     return docs, qrys, relevant_docs, "cran/"
@@ -87,9 +87,9 @@ def test_okapi():
 if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
-    f_path = abs_path
-#    docs, qrys, relevant_docs, dir = read_cran(f_path)
-    docs, qrys, relevant_docs, dir = read_adi(f_path)
+    f_path = rel_path
+    docs, qrys, relevant_docs, dir = read_cran(f_path)
+#    docs, qrys, relevant_docs, dir = read_adi(f_path)
 #    docs, qrys, relevant_docs, dir = read_med(f_path)
 
     m = Manager()
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     out_dir = "out/" + dir
 
     test_cosine()
-#    test_okapi()
+    test_okapi()
 
     # Loop for running processes in parallel that differ by level of influence
     # influence = 0.10
