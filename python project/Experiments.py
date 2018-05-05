@@ -91,17 +91,69 @@ def test_okapi():
     run_save(okapi_func, "okapi")
 
 # __________________________ Train _______________________________
-def train():
+def train_sub_all():
     # Loop for running processes in parallel that differ by level of influence
     m = Manager()
     qu = m.list()
     process_list = []
     influence = 0.02
-    while influence <= 0.02:
+    while influence <= 0.1:
         func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
         p = Process(target=run, args=(qu, func, 'sub_all prob=' + str(influence)))
         process_list.append(p)
         influence += 0.02
+
+    # Start all processes
+    for p in process_list:
+        p.start()
+
+    # Wait for all processes to end
+    for p in process_list:
+        p.join()
+
+    # Sort based on base MAP score and display stats
+    q = sorted(qu, key=lambda x: x[1], reverse=True)
+    print("\n" + str(q))
+    label, avg_map, results = q[0]
+    save(label, results, avg_map)
+
+def train_is_early_noun_adj():
+    # Loop for running processes in parallel that differ by level of influence
+    m = Manager()
+    qu = m.list()
+    process_list = []
+    influence = 2.0
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=influence)
+        p = Process(target=run, args=(qu, func, 'is_early_noun_adj i=' + str(influence)))
+        process_list.append(p)
+        influence += 0.02
+
+    # Start all processes
+    for p in process_list:
+        p.start()
+
+    # Wait for all processes to end
+    for p in process_list:
+        p.join()
+
+    # Sort based on base MAP score and display stats
+    q = sorted(qu, key=lambda x: x[1], reverse=True)
+    print("\n" + str(q))
+    label, avg_map, results = q[0]
+    save(label, results, avg_map)
+
+def train_is_adj_noun_linear_pairs():
+    # Loop for running processes in parallel that differ by level of influence
+    m = Manager()
+    qu = m.list()
+    process_list = []
+    influence = 1.25
+    while influence <= 2.0:
+        func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=influence)
+        p = Process(target=run, args=(qu, func, 'is_adj_noun_linear_pairs i=' + str(influence)))
+        process_list.append(p)
+        influence += 0.25
 
     # Start all processes
     for p in process_list:
@@ -122,9 +174,9 @@ if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = rel_path
-#    docs, qrys, relevant_docs, dir = read_cran(f_path)
+    docs, qrys, relevant_docs, dir = read_cran(f_path)
 #    docs, qrys, relevant_docs, dir = read_adi(f_path)
-    docs, qrys, relevant_docs, dir = read_med(f_path)
+#    docs, qrys, relevant_docs, dir = read_med(f_path)
 
     query_limit = -1  # Use all queries
     doc_limit = -1  # Use all documents
@@ -133,7 +185,9 @@ if __name__ == "__main__":
     #test_cosine()
     #test_okapi()
 
-    train()
+    train_sub_all()
+    train_is_early_noun_adj()
+    train_is_adj_noun_linear_pairs()
 
     print("Done")
 
