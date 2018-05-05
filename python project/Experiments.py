@@ -94,12 +94,12 @@ def test_okapi():
 def train():
     # Loop for running processes in parallel that differ by level of influence
     m = Manager()
-    q = m.list()
+    qu = m.list()
     process_list = []
     influence = 0.02
-    while influence <= 0.04:
+    while influence <= 0.02:
         func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
-        p = Process(target=run, args=(q, func, 'sub_all prob=' + str(influence)))
+        p = Process(target=run, args=(qu, func, 'sub_all prob=' + str(influence)))
         process_list.append(p)
         influence += 0.02
 
