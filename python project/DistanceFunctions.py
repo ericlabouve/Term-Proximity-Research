@@ -5,16 +5,22 @@
 # Unmodified Cosine:                                                MAP=0.28156330866837304
 # Unmodified Okapi:                                                 MAP=0.28192613853461285
 # sub_all prob=0.10                                                 MAP=
+# is_remove_adj                                                     MAP=0.2277293845592815
+# is_remove_adv                                                     MAP=0.2813225565398429
 #
 # DATASET = adi: query_limit=35, doc_limit=None, stemming_on=True
 # Unmodified Cosine:                                                MAP=0.37783666300710345
 # Unmodified Okapi:                                                 MAP=0.3789677267181438
 # sub_all prob=0.10                                                 MAP=
+# is_remove_adj                                                     MAP=0.34522225013182856
+# is_remove_adv                                                     MAP=0.38526070879256363
 #
 # DATASET = med: query_limit=30, doc_limit=None, stemming_on=True
 # Unmodified Cosine:                                                MAP=0.5299083680454879
 # Unmodified Okapi:                                                 MAP=0.5345275109699796
 # sub_all prob=0.40                                                 MAP=0.5348136735114636
+# is_remove_adj                                                     MAP=0.4985415092488889
+# is_remove_adv                                                     MAP=0.535015149771215
 #
 #
 #
@@ -205,7 +211,9 @@ class OkapiModFunction(DistanceFunction):
                  is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
                  is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25,
 
-                 is_sub_all=False, sub_prob=0.10):
+                 is_sub_all=False, sub_prob=0.10,
+
+                 is_remove_adj=False, is_remove_adv=False):
 
         super().__init__(vector_collection)
         # Okapi variables
@@ -258,6 +266,15 @@ class OkapiModFunction(DistanceFunction):
         # Word substitutions from WordNet
         self.is_sub_all = is_sub_all
         self.sub_prob = sub_prob
+        # remove variables
+        self.is_remove_adj = is_remove_adj
+            # Only include adj if next doc term matches next query term
+        self.remove_adj_boosts = 0.0
+        self.remove_last_term_adj = None
+        self.is_remove_adv = is_remove_adv
+            # Only include adv if next doc term matches next query term
+        self.remove_adv_boosts = 0.0
+        self.remove_last_term_adv = None
 
     def execute(self) -> float:
         okapi_sum = 0
@@ -269,9 +286,9 @@ class OkapiModFunction(DistanceFunction):
             if term not in terms:
                 product = self.okapi(term)
 
-            # Independent collection of boosts
-            boosts = []
+            boosts = []  # Independent collection of boosts
             sub_boosts = []  # Substitution boosts
+
             if self.is_early:
                 boosts.append(boost(product, self.early_term(term)))
             if self.is_early_noun:
@@ -352,6 +369,38 @@ class OkapiModFunction(DistanceFunction):
                     if prob > self.sub_prob:
                         weight = self.okapi(sub_term) * prob
                         sub_boosts.append(weight)
+
+            if self.is_remove_adj:  # Needs to be last
+                if wn.is_adjective(pos):
+                    self.remove_adj_boosts = product + sum(boosts) + sum(sub_boosts)
+                    self.remove_last_term_adj = term
+                    terms.append(term)
+                    continue
+                # If we just found an adj and the next term is a noun found in both q and d
+                elif wn.is_noun(pos) and self.remove_last_term_adj is not None\
+                        and self.same_sentence(self.remove_last_term_adj, term):
+                    boosts.append(self.remove_adj_boosts)
+                    self.remove_adj_boosts = 0
+                    self.remove_last_term_adj = None
+                else:
+                    self.remove_adj_boosts = 0
+                    self.remove_last_term_adj = None
+
+            if self.is_remove_adv:  # Needs to be last
+                if wn.is_adverb(pos):
+                    self.remove_adv_boosts = product + sum(boosts) + sum(sub_boosts)
+                    self.remove_last_term_adv = term
+                    terms.append(term)
+                    continue
+                # If we just found an adj and the next term is a noun found in both q and d
+                elif wn.is_verb(pos) and self.remove_last_term_adv is not None\
+                        and self.same_sentence(self.remove_last_term_adv, term):
+                    boosts.append(self.remove_adv_boosts)
+                    self.remove_adv_boosts = 0
+                    self.remove_last_term_adv = None
+                else:
+                    self.remove_adv_boosts = 0
+                    self.remove_last_term_adv = None
 
             terms.append(term)
             okapi_sum += product + sum(boosts) + sum(sub_boosts)
@@ -439,8 +488,8 @@ class OkapiModFunction(DistanceFunction):
         result = self.close_pairs_influence / min_dif
         return result
 
-    # Gives an extra boost to adjectives and nouns that are found near each other,
-    # either in the same sentence or the same clause
+    # Gives an extra boost to adjectives and nouns that are found near each other
+    # in the same sentence
     def adj_noun_pairs(self, term, pos):
         if self.last_term_pos is None:
             self.last_term_pos = (term, pos)
@@ -572,3 +621,21 @@ class OkapiModFunction(DistanceFunction):
                     idxAdv = posting2.offsets[idx]
                     return max(m * (idxVb - idxAdv) + (b - m), 1)
         return 1
+
+    # Determines if two terms are found in order in the same sentence
+    def same_sentence(self, term1, term2) -> bool:
+        # Get term locations inside this document
+        posting1 = self.vector_collection.get_term_posting_for_doc(term1, self.doc.id)
+        posting2 = self.vector_collection.get_term_posting_for_doc(term2, self.doc.id)
+        # Determine if both terms appear in the document
+        if posting1 is None or posting2 is None:
+            return False
+        # Boost if ADV and VERB appear in same sentence and same order as query
+        sentences = zip(posting1.sentence, posting2.sentence)
+        for idx, s1_s2 in enumerate(sentences):
+            s1 = s1_s2[0]
+            s2 = s1_s2[1]
+            if s1 == s2 and posting1.offsets[idx] > posting2.offsets[idx]:
+                return True
+        return False
+

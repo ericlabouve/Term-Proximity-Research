@@ -59,6 +59,35 @@ def save(func_name, results, avg_map):
         f.write(str(avg_map))
     print("\n" + func_name + ": " + str(avg_map))
 
+def start_processes(process_list, qu):
+    # Start all processes
+    for p in process_list:
+        p.start()
+
+    # Wait for all processes to end
+    for p in process_list:
+        p.join()
+
+    # Sort based on base MAP score and display stats
+    q = sorted(qu, key=lambda x: x[1], reverse=True)
+    print("\n" + str(q))
+    label, avg_map, results = q[0]
+    save(label, results, avg_map)
+
+def run_funcs(funcs):
+    best_map = 0
+    best_result = None
+    best_label = None
+    for func, label in funcs:
+        results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
+        avg_map = score_fs.compute_avg_map(results, relevant_docs)
+        print("\n" + label + ": " + str(avg_map))
+        if (avg_map > best_map):
+            best_map = avg_map
+            best_result = results
+            best_label = label
+    save(best_label, best_result, best_map)
+
 # _____________Functions for reading documents, queries and relevant documents_____________
 
 def read_cran(path):
@@ -66,13 +95,11 @@ def read_cran(path):
     qrys = VectorCollection(path + "/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
     relevant_docs = score_fs.read_human_judgement(path + "/cran/cranqrel", 1, 3)
     return docs, qrys, relevant_docs, "cran/"
-
 def read_adi(path):
     docs = VectorCollection(path + "/adi/ADI.ALL", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection(path + "/adi/ADI.QRY", VectorType.QUERIES, stemming_on=True)
     relevant_docs = score_fs.read_human_judgement(path + "/adi/ADI.REL", 0, 0)  # DIFFERENT FORMAT
     return docs, qrys, relevant_docs, "adi/"
-
 def read_med(path):
     docs = VectorCollection(path + "/med/MED.ALL", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection(path + "/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
@@ -85,105 +112,74 @@ def test_cosine():
     qrys.normalize(docs)
     cos_func = CosineFunction(docs)
     run_save(cos_func, "cosine")
-
 def test_okapi():
     okapi_func = OkapiFunction(docs)
     run_save(okapi_func, "okapi")
+def test_is_remove_adj():
+    okapi_func = OkapiModFunction(docs, is_remove_adj=True)
+    run_save(okapi_func, "remove adj")
+def test_is_remove_adv():
+    okapi_func = OkapiModFunction(docs, is_remove_adv=True)
+    run_save(okapi_func, "remove adv")
 
+# Processes function example:
 # __________________________ Train _______________________________
+# def train_sub_all():
+#     # Loop for running processes in parallel that differ by level of influence
+#     m = Manager()
+#     qu = m.list()
+#     process_list = []
+#     influence = 0.02
+#     while influence <= 0.1:
+#         func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
+#         p = Process(target=run, args=(qu, func, 'sub_all prob=' + str(influence)))
+#         process_list.append(p)
+#         influence += 0.02
+
 def train_sub_all():
-    # Loop for running processes in parallel that differ by level of influence
-    m = Manager()
-    qu = m.list()
-    process_list = []
     influence = 0.02
+    funcs = []
     while influence <= 0.1:
         func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
-        p = Process(target=run, args=(qu, func, 'sub_all prob=' + str(influence)))
-        process_list.append(p)
+        funcs.append((func, "is_sub_all" + " i=" + str(influence)))
         influence += 0.02
-
-    # Start all processes
-    for p in process_list:
-        p.start()
-
-    # Wait for all processes to end
-    for p in process_list:
-        p.join()
-
-    # Sort based on base MAP score and display stats
-    q = sorted(qu, key=lambda x: x[1], reverse=True)
-    print("\n" + str(q))
-    label, avg_map, results = q[0]
-    save(label, results, avg_map)
+    run_funcs(funcs)
 
 def train_is_early_noun_adj():
-    # Loop for running processes in parallel that differ by level of influence
-    m = Manager()
-    qu = m.list()
-    process_list = []
     influence = 2.0
+    funcs = []
     while influence <= 3.0:
         func = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=influence)
-        p = Process(target=run, args=(qu, func, 'is_early_noun_adj i=' + str(influence)))
-        process_list.append(p)
-        influence += 0.02
-
-    # Start all processes
-    for p in process_list:
-        p.start()
-
-    # Wait for all processes to end
-    for p in process_list:
-        p.join()
-
-    # Sort based on base MAP score and display stats
-    q = sorted(qu, key=lambda x: x[1], reverse=True)
-    print("\n" + str(q))
-    label, avg_map, results = q[0]
-    save(label, results, avg_map)
+        funcs.append((func, "is_early_noun_adj" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
 
 def train_is_adj_noun_linear_pairs():
-    # Loop for running processes in parallel that differ by level of influence
-    m = Manager()
-    qu = m.list()
-    process_list = []
     influence = 1.25
+    funcs = []
     while influence <= 2.0:
         func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=influence)
-        p = Process(target=run, args=(qu, func, 'is_adj_noun_linear_pairs i=' + str(influence)))
-        process_list.append(p)
+        funcs.append((func, "is_adj_noun_linear_pairs" + " i=" + str(influence)))
         influence += 0.25
-
-    # Start all processes
-    for p in process_list:
-        p.start()
-
-    # Wait for all processes to end
-    for p in process_list:
-        p.join()
-
-    # Sort based on base MAP score and display stats
-    q = sorted(qu, key=lambda x: x[1], reverse=True)
-    print("\n" + str(q))
-    label, avg_map, results = q[0]
-    save(label, results, avg_map)
+    run_funcs(funcs)
 
 
 if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
-    f_path = rel_path
+    f_path = abs_path
     docs, qrys, relevant_docs, dir = read_cran(f_path)
 #    docs, qrys, relevant_docs, dir = read_adi(f_path)
 #    docs, qrys, relevant_docs, dir = read_med(f_path)
 
-    query_limit = -1  # Use all queries
+    query_limit = 2  # Use all queries
     doc_limit = -1  # Use all documents
     out_dir = "out/" + dir
 
     #test_cosine()
     #test_okapi()
+    #test_is_remove_adj()
+    #test_is_remove_adv()
 
     train_sub_all()
     train_is_early_noun_adj()
