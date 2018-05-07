@@ -33,12 +33,6 @@ if __name__ == "__main0__":
     print(sum)
 
 
-def run(queue, func, label):
-    results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
-    avg_map = score_fs.compute_avg_map(results, relevant_docs)
-    queue.append((label, avg_map, results))
-
-
 # Run the func, save the results to the file indicated by the path, and save the MAP score
 def run_save(func, func_name):
     results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
@@ -62,46 +56,7 @@ def save(func_name, results, avg_map):
     print("\n" + func_name + ": " + str(avg_map))
 
 
-def train_sub_all():
-    # Loop for running processes in parallel that differ by level of influence
-    m = Manager()
-    qu = m.list()
-    process_list = []
-    influence = 0.02
-    while influence <= 0.1:
-        func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
-        p = Process(target=run, args=(qu, func, 'sub_all prob=' + str(influence)))
-        process_list.append(p)
-        influence += 0.02
-def start_processes(process_list, qu):
-    # Start all processes
-    for p in process_list:
-        p.start()
 
-    # Wait for all processes to end
-    for p in process_list:
-        p.join()
-
-    # Sort based on base MAP score and display stats
-    q = sorted(qu, key=lambda x: x[1], reverse=True)
-    print("\n" + str(q))
-    label, avg_map, results = q[0]
-    save(label, results, avg_map)
-
-
-def run_funcs(funcs):
-    best_map = 0
-    best_result = None
-    best_label = None
-    for func, label in funcs:
-        results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
-        avg_map = score_fs.compute_avg_map(results, relevant_docs)
-        print("\n" + label + ": " + str(avg_map))
-        if (avg_map > best_map):
-            best_map = avg_map
-            best_result = results
-            best_label = label
-    save(best_label, best_result, best_map)
 
 # _____________Functions for reading documents, queries and relevant documents_____________
 
@@ -137,14 +92,72 @@ def test_is_remove_adv():
     okapi_func = OkapiModFunction(docs, is_remove_adv=True)
     run_save(okapi_func, "remove adv")
 
+def test_sub_all():
+    okapi_func = OkapiModFunction(docs, is_sub_all=True, sub_prob=0.25)
+    run_save(okapi_func, "sub all i=.25")
+def test_sub_noun():
+    okapi_func = OkapiModFunction(docs, is_sub_noun=True, sub_prob=0.25)
+    run_save(okapi_func, "sub noun i=.25")
+def test_sub_verb():
+    okapi_func = OkapiModFunction(docs, is_sub_verb=True, sub_prob=0.25)
+    run_save(okapi_func, "sub verb i=.25")
+def test_sub_adj():
+    okapi_func = OkapiModFunction(docs, is_sub_adj=True, sub_prob=0.25)
+    run_save(okapi_func, "sub adj i=.25")
+def test_sub_adv():
+    okapi_func = OkapiModFunction(docs, is_sub_adv=True, sub_prob=0.25)
+    run_save(okapi_func, "sub adv i=.25")
+def test_sub_idf5():
+    okapi_func = OkapiModFunction(docs, is_sub_idf=True, sub_prob=0.25, sub_idf_top=5)
+    run_save(okapi_func, "sub idf top=5 i=.25")
 
-# __________________________ Train _______________________________
+def test_early_all():
+    okapi_func = OkapiModFunction(docs, is_early=True, early_term_influence=2.4)
+    run_save(okapi_func, "early all i=2.4")
+def test_early_noun():
+    okapi_func = OkapiModFunction(docs, is_early_noun=True, early_term_influence=2.4)
+    run_save(okapi_func, "early noun i=2.4")
+def test_early_verb():
+    okapi_func = OkapiModFunction(docs, is_early_verb=True, early_term_influence=2.4)
+    run_save(okapi_func, "early verb i=2.4")
+def test_early_adj():
+    okapi_func = OkapiModFunction(docs, is_early_adj=True, early_term_influence=2.4)
+    run_save(okapi_func, "early adj i=2.4")
+def test_early_adv():
+    okapi_func = OkapiModFunction(docs, is_early_adv=True, early_term_influence=2.4)
+    run_save(okapi_func, "early adv i=2.4")
+def test_early_noun_adj():
+    okapi_func = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=2.4)
+    run_save(okapi_func, "early noun adj i=2.4")
+def test_early_verb_adv():
+    okapi_func = OkapiModFunction(docs, is_early_verb_adv=True, early_term_influence=2.4)
+    run_save(okapi_func, "early verb adv i=2.4")
+def test_early_not_noun():
+    okapi_func = OkapiModFunction(docs, is_early_not_noun=True, early_term_influence=2.4)
+    run_save(okapi_func, "early not noun i=2.4")
+def test_early_not_verb():
+    okapi_func = OkapiModFunction(docs, is_early_not_verb=True, early_term_influence=2.4)
+    run_save(okapi_func, "early not verb i=2.4")
+def test_early_not_adj():
+    okapi_func = OkapiModFunction(docs, is_early_not_adj=True, early_term_influence=2.4)
+    run_save(okapi_func, "early not adj i=2.4")
+def test_early_not_adv():
+    okapi_func = OkapiModFunction(docs, is_early_not_adv=True, early_term_influence=2.4)
+    run_save(okapi_func, "early not adv i=2.4")
+def test_early_not_verb_adv():
+    okapi_func = OkapiModFunction(docs, is_early_not_verb_adv=True, early_term_influence=2.4)
+    run_save(okapi_func, "early not verb adv i=2.4")
+def test_early_not_noun_adj():
+    okapi_func = OkapiModFunction(docs, is_early_not_noun_adj=True, early_term_influence=2.4)
+    run_save(okapi_func, "early not noun adj i=2.4")
+
+# __________________________ Train Linear _______________________________
 def train_sub_all():
     influence = 0.02
     funcs = []
     while influence <= 0.1:
         func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
-        funcs.append((func, "is_sub_all" + " i=" + str(influence)))
+        funcs.append((func, "sub_all" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
 def train_sub_noun():
@@ -152,7 +165,7 @@ def train_sub_noun():
     funcs = []
     while influence <= 0.1:
         func = OkapiModFunction(docs, is_sub_noun=True, sub_prob=influence)
-        funcs.append((func, "is_sub_noun" + " i=" + str(influence)))
+        funcs.append((func, "sub_noun" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
 def train_sub_verb():
@@ -160,7 +173,7 @@ def train_sub_verb():
     funcs = []
     while influence <= 0.1:
         func = OkapiModFunction(docs, is_sub_verb=True, sub_prob=influence)
-        funcs.append((func, "is_sub_verb" + " i=" + str(influence)))
+        funcs.append((func, "sub_verb" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
 def train_sub_adj():
@@ -168,7 +181,7 @@ def train_sub_adj():
     funcs = []
     while influence <= 0.1:
         func = OkapiModFunction(docs, is_sub_adj=True, sub_prob=influence)
-        funcs.append((func, "is_sub_adj" + " i=" + str(influence)))
+        funcs.append((func, "sub_adj" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
 def train_sub_adv():
@@ -176,15 +189,15 @@ def train_sub_adv():
     funcs = []
     while influence <= 0.1:
         func = OkapiModFunction(docs, is_sub_adv=True, sub_prob=influence)
-        funcs.append((func, "is_sub_adv" + " i=" + str(influence)))
+        funcs.append((func, "sub_adv" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
-def train_sub_adf3():
+def train_sub_idf3():
     influence = 0.02
     funcs = []
     while influence <= 0.1:
         func = OkapiModFunction(docs, is_sub_idf=True, sub_prob=influence, sub_idf_top=3)
-        funcs.append((func, "is_sub_idf top=3" + " i=" + str(influence)))
+        funcs.append((func, "sub_idf top=3" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
 def train_is_early_noun_adj():
@@ -192,7 +205,7 @@ def train_is_early_noun_adj():
     funcs = []
     while influence <= 3.0:
         func = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=influence)
-        funcs.append((func, "is_early_noun_adj" + " i=" + str(influence)))
+        funcs.append((func, "early_noun_adj" + " i=" + str(influence)))
         influence += 0.2
     run_funcs(funcs)
 def train_is_adj_noun_linear_pairs():
@@ -200,36 +213,110 @@ def train_is_adj_noun_linear_pairs():
     funcs = []
     while influence <= 2.0:
         func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=influence)
-        funcs.append((func, "is_adj_noun_linear_pairs" + " i=" + str(influence)))
+        funcs.append((func, "adj_noun_linear_pairs" + " i=" + str(influence)))
         influence += 0.25
     run_funcs(funcs)
+
+def run_funcs(funcs):
+    best_map = 0
+    best_result = None
+    best_label = None
+    for func, label in funcs:
+        results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
+        avg_map = score_fs.compute_avg_map(results, relevant_docs)
+        print("\n" + label + ": " + str(avg_map))
+        if (avg_map > best_map):
+            best_map = avg_map
+            best_result = results
+            best_label = label
+    save(best_label, best_result, best_map)
+
+
+# __________________________ Train Multiprocess _______________________________
+def run(queue, func, label):
+    results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
+    avg_map = score_fs.compute_avg_map(results, relevant_docs)
+    queue.append((label, avg_map, results))
+def start_processes(process_list, qu):
+    # Start all processes
+    for p in process_list:
+        p.start()
+
+    # Wait for all processes to end
+    for p in process_list:
+        p.join()
+
+    # Sort based on base MAP score and display stats
+    q = sorted(qu, key=lambda x: x[1], reverse=True)
+    print("\n" + str(q))
+    label, avg_map, results = q[0]
+    save(label, results, avg_map)
+
+def train_sub_all_old():
+    # Loop for running processes in parallel that differ by level of influence
+    m = Manager()
+    qu = m.list()
+    process_list = []
+    influence = 0.02
+    while influence <= 0.1:
+        func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
+        p = Process(target=run, args=(qu, func, 'sub_all prob=' + str(influence)))
+        process_list.append(p)
+        influence += 0.02
+    start_processes(process_list, qu)
 
 
 if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = abs_path
-    docs, qrys, relevant_docs, dir = read_cran(f_path)
+#    docs, qrys, relevant_docs, dir = read_cran(f_path)
 #    docs, qrys, relevant_docs, dir = read_adi(f_path)
-#    docs, qrys, relevant_docs, dir = read_med(f_path)
+    docs, qrys, relevant_docs, dir = read_med(f_path)
 
-    query_limit = 2  # Use all queries
+    query_limit = -1  # Use all queries
     doc_limit = -1  # Use all documents
     out_dir = "out/" + dir
 
+    # ___________ Tests ___________
     #test_cosine()
     #test_okapi()
+
     #test_is_remove_adj()
     #test_is_remove_adv()
 
-    train_sub_all()
-    train_sub_noun()
-    train_sub_verb()
-    train_sub_adj()
-    train_sub_adv()
-    train_sub_adf3()
-    train_is_early_noun_adj()
-    train_is_adj_noun_linear_pairs()
+    # test_sub_all()
+    # test_sub_noun()
+    # test_sub_verb()
+    # test_sub_adj()
+    # test_sub_adv()
+    # test_sub_idf5()
+
+    # test_early_all()
+    # test_early_noun()
+    # test_early_verb()
+    # test_early_adj()
+    # test_early_adv()
+    # test_early_noun_adj()
+    test_early_verb_adv()
+    # test_early_not_noun()
+    # test_early_not_verb()
+    # test_early_not_adj()
+    # test_early_not_adv()
+    # test_early_not_verb_adv()
+    test_early_not_noun_adj()
+
+    # ___________ Training ___________
+    # train_sub_all()
+    # train_sub_noun()
+    # train_sub_verb()
+    # train_sub_adj()
+    # train_sub_adv()
+    # train_sub_idf3()
+    #
+    # train_is_early_noun_adj()
+    #
+    # train_is_adj_noun_linear_pairs()
 
     print("Done")
 
@@ -339,14 +426,6 @@ if __name__ == "__main0__":
             for term in term_intersect:
                 idf.append(round(compute_idf(docs, term), 2))
             print('Doc id:' + str(doc_id) + ', len=' + str(len(term_intersect)) + ', terms = ' + str(term_intersect) + ', ' + str(idf))
-
-
-
-
-
-
-
-
 
 
 

@@ -195,9 +195,9 @@ class OkapiFunction(DistanceFunction):
 class OkapiModFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection,
                  is_early=False, is_early_noun=False, is_early_verb=False, is_early_adj=False, is_early_adv=False, early_term_influence=2.4,
-                 is_early_noun_adj=False,
+                 is_early_noun_adj=False, is_early_verb_adv=False,
                  is_early_not_noun=False, is_early_not_verb=False, is_early_not_adj=False, is_early_not_adv=False,
-                 is_early_not_verb_adv=False,
+                 is_early_not_verb_adv=False, is_early_not_noun_adj=False,
 
                  is_early_q=False, is_early_q_noun=False, is_early_q_verb=False,
 
@@ -211,8 +211,8 @@ class OkapiModFunction(DistanceFunction):
                  is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
                  is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25,
 
-                 is_sub_all=False, is_sub_noun=False, is_sub_verb=False, is_sub_adj=False, is_sub_adv=False, sub_prob=0.10,
-                 is_sub_idf=False, sub_idf_top=3,
+                 is_sub_all=False, is_sub_noun=False, is_sub_verb=False, is_sub_adj=False, is_sub_adv=False, sub_prob=0.25,
+                 is_sub_idf=False, sub_idf_top=5,
 
                  is_remove_adj=False, is_remove_adv=False):
 
@@ -232,11 +232,13 @@ class OkapiModFunction(DistanceFunction):
         self.is_early_adv = is_early_adv
         self.early_term_influence = early_term_influence
         self.is_early_noun_adj = is_early_noun_adj
+        self.is_early_verb_adv = is_early_verb_adv
         self.is_early_not_noun = is_early_not_noun
         self.is_early_not_verb = is_early_not_verb
         self.is_early_not_adj = is_early_not_adj
         self.is_early_not_adv = is_early_not_adv
         self.is_early_not_verb_adv = is_early_not_verb_adv
+        self.is_early_not_noun_adj = is_early_not_noun_adj
         self.is_early_q = is_early_q
         self.is_early_q_noun = is_early_q_noun
         self.is_early_q_verb = is_early_q_verb
@@ -318,6 +320,9 @@ class OkapiModFunction(DistanceFunction):
             if self.is_early_noun_adj: # Boost both adjectives and nouns
                 if wn.is_noun(pos) or wn.is_adjective(pos):
                     boosts.append(boost(product, self.early_term(term)))
+            if self.is_early_verb_adv: # Boost both verbs and adv
+                if wn.is_verb(pos) or wn.is_adverb(pos):
+                    boosts.append(boost(product, self.early_term(term)))
             if self.is_early_not_noun:
                 if not wn.is_noun(pos):
                     boosts.append(boost(product, self.early_term(term)))
@@ -332,6 +337,9 @@ class OkapiModFunction(DistanceFunction):
                     boosts.append(boost(product, self.early_term(term)))
             if self.is_early_not_verb_adv:
                 if not wn.is_verb(pos) and not wn.is_adverb(pos):
+                    boosts.append(boost(product, self.early_term(term)))
+            if self.is_early_not_noun_adj:
+                if not wn.is_noun(pos) and not wn.is_adjective(pos):
                     boosts.append(boost(product, self.early_term(term)))
 
             if self.is_early_q:
