@@ -38,6 +38,7 @@ def run(queue, func, label):
     avg_map = score_fs.compute_avg_map(results, relevant_docs)
     queue.append((label, avg_map, results))
 
+
 # Run the func, save the results to the file indicated by the path, and save the MAP score
 def run_save(func, func_name):
     results = qrys.find_closest_docs(docs, func, doc_limit=doc_limit, query_limit=query_limit)
@@ -50,6 +51,7 @@ def run_save(func, func_name):
         f.write(str(avg_map))
     print("\n" + func_name + ": " + str(avg_map))
 
+
 def save(func_name, results, avg_map):
     results_file = out_dir + func_name + "_results.json"
     with open(results_file, 'w') as f:
@@ -59,6 +61,18 @@ def save(func_name, results, avg_map):
         f.write(str(avg_map))
     print("\n" + func_name + ": " + str(avg_map))
 
+
+def train_sub_all():
+    # Loop for running processes in parallel that differ by level of influence
+    m = Manager()
+    qu = m.list()
+    process_list = []
+    influence = 0.02
+    while influence <= 0.1:
+        func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
+        p = Process(target=run, args=(qu, func, 'sub_all prob=' + str(influence)))
+        process_list.append(p)
+        influence += 0.02
 def start_processes(process_list, qu):
     # Start all processes
     for p in process_list:
@@ -73,6 +87,7 @@ def start_processes(process_list, qu):
     print("\n" + str(q))
     label, avg_map, results = q[0]
     save(label, results, avg_map)
+
 
 def run_funcs(funcs):
     best_map = 0
@@ -122,20 +137,8 @@ def test_is_remove_adv():
     okapi_func = OkapiModFunction(docs, is_remove_adv=True)
     run_save(okapi_func, "remove adv")
 
-# Processes function example:
-# __________________________ Train _______________________________
-# def train_sub_all():
-#     # Loop for running processes in parallel that differ by level of influence
-#     m = Manager()
-#     qu = m.list()
-#     process_list = []
-#     influence = 0.02
-#     while influence <= 0.1:
-#         func = OkapiModFunction(docs, is_sub_all=True, sub_prob=influence)
-#         p = Process(target=run, args=(qu, func, 'sub_all prob=' + str(influence)))
-#         process_list.append(p)
-#         influence += 0.02
 
+# __________________________ Train _______________________________
 def train_sub_all():
     influence = 0.02
     funcs = []
@@ -144,7 +147,46 @@ def train_sub_all():
         funcs.append((func, "is_sub_all" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
-
+def train_sub_noun():
+    influence = 0.02
+    funcs = []
+    while influence <= 0.1:
+        func = OkapiModFunction(docs, is_sub_noun=True, sub_prob=influence)
+        funcs.append((func, "is_sub_noun" + " i=" + str(influence)))
+        influence += 0.02
+    run_funcs(funcs)
+def train_sub_verb():
+    influence = 0.02
+    funcs = []
+    while influence <= 0.1:
+        func = OkapiModFunction(docs, is_sub_verb=True, sub_prob=influence)
+        funcs.append((func, "is_sub_verb" + " i=" + str(influence)))
+        influence += 0.02
+    run_funcs(funcs)
+def train_sub_adj():
+    influence = 0.02
+    funcs = []
+    while influence <= 0.1:
+        func = OkapiModFunction(docs, is_sub_adj=True, sub_prob=influence)
+        funcs.append((func, "is_sub_adj" + " i=" + str(influence)))
+        influence += 0.02
+    run_funcs(funcs)
+def train_sub_adv():
+    influence = 0.02
+    funcs = []
+    while influence <= 0.1:
+        func = OkapiModFunction(docs, is_sub_adv=True, sub_prob=influence)
+        funcs.append((func, "is_sub_adv" + " i=" + str(influence)))
+        influence += 0.02
+    run_funcs(funcs)
+def train_sub_adf3():
+    influence = 0.02
+    funcs = []
+    while influence <= 0.1:
+        func = OkapiModFunction(docs, is_sub_idf=True, sub_prob=influence, sub_idf_top=3)
+        funcs.append((func, "is_sub_idf top=3" + " i=" + str(influence)))
+        influence += 0.02
+    run_funcs(funcs)
 def train_is_early_noun_adj():
     influence = 2.0
     funcs = []
@@ -153,7 +195,6 @@ def train_is_early_noun_adj():
         funcs.append((func, "is_early_noun_adj" + " i=" + str(influence)))
         influence += 0.2
     run_funcs(funcs)
-
 def train_is_adj_noun_linear_pairs():
     influence = 1.25
     funcs = []
@@ -182,6 +223,11 @@ if __name__ == "__main__":
     #test_is_remove_adv()
 
     train_sub_all()
+    train_sub_noun()
+    train_sub_verb()
+    train_sub_adj()
+    train_sub_adv()
+    train_sub_adf3()
     train_is_early_noun_adj()
     train_is_adj_noun_linear_pairs()
 

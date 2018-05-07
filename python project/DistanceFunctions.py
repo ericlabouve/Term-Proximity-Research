@@ -211,7 +211,8 @@ class OkapiModFunction(DistanceFunction):
                  is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
                  is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25,
 
-                 is_sub_all=False, sub_prob=0.10,
+                 is_sub_all=False, is_sub_noun=False, is_sub_verb=False, is_sub_adj=False, is_sub_adv=False, sub_prob=0.10,
+                 is_sub_idf=False, sub_idf_top=3,
 
                  is_remove_adj=False, is_remove_adv=False):
 
@@ -265,7 +266,13 @@ class OkapiModFunction(DistanceFunction):
         self.adv_verb_pairs_b = adv_verb_pairs_b
         # Word substitutions from WordNet
         self.is_sub_all = is_sub_all
+        self.is_sub_noun = is_sub_noun
+        self.is_sub_verb = is_sub_verb
+        self.is_sub_adj = is_sub_adj
+        self.is_sub_adv = is_sub_adv
         self.sub_prob = sub_prob
+        self.is_sub_idf = is_sub_idf
+        self.sub_idf_top = sub_idf_top
         # remove variables
         self.is_remove_adj = is_remove_adj
             # Only include adj if next doc term matches next query term
@@ -279,6 +286,11 @@ class OkapiModFunction(DistanceFunction):
     def execute(self) -> float:
         okapi_sum = 0
         terms = []
+
+        # Need to know idf scores ahead of time
+        if self.is_sub_idf:
+            is_top_idf_map = self.calc_top_idfs()
+
         # Traverse query terms in order of how they appear
         # Do not want to double score the same term
         for term, pos, subs in zip(self.query.terms, self.query.terms_pos, self.query.terms_sub):
@@ -365,10 +377,22 @@ class OkapiModFunction(DistanceFunction):
                 self.last_term_pos = (term, pos)
 
             if self.is_sub_all:
-                for sub_term, prob in subs:
-                    if prob > self.sub_prob:
-                        weight = self.okapi(sub_term) * prob
-                        sub_boosts.append(weight)
+                self.substitute(sub_boosts, subs)
+            if self.is_sub_noun:
+                if wn.is_noun(pos):
+                    self.substitute(sub_boosts, subs)
+            if self.is_sub_verb:
+                if wn.is_verb(pos):
+                    self.substitute(sub_boosts, subs)
+            if self.is_sub_adj:
+                if wn.is_adjective(pos):
+                    self.substitute(sub_boosts, subs)
+            if self.is_sub_adv:
+                if wn.is_adverb(pos):
+                    self.substitute(sub_boosts, subs)
+            if self.is_sub_idf:  # substitute for the terms with the top idf scores
+                if is_top_idf_map[term]:
+                    self.substitute(sub_boosts, subs)
 
             if self.is_remove_adj:  # Needs to be last
                 if wn.is_adjective(pos):
@@ -385,7 +409,6 @@ class OkapiModFunction(DistanceFunction):
                 else:
                     self.remove_adj_boosts = 0
                     self.remove_last_term_adj = None
-
             if self.is_remove_adv:  # Needs to be last
                 if wn.is_adverb(pos):
                     self.remove_adv_boosts = product + sum(boosts) + sum(sub_boosts)
@@ -406,6 +429,12 @@ class OkapiModFunction(DistanceFunction):
             okapi_sum += product + sum(boosts) + sum(sub_boosts)
         return okapi_sum
 
+    def substitute(self, sub_boosts, subs):
+        for sub_term, prob in subs:
+            if prob > self.sub_prob:
+                weight = self.okapi(sub_term) * prob
+                sub_boosts.append(weight)
+
     def okapi(self, term):
         dfi = self.vector_collection.get_doc_freq(term)
         fij = self.doc.term_to_freq[term]
@@ -416,6 +445,25 @@ class OkapiModFunction(DistanceFunction):
         third_term = ((self.k2 + 1) * fiq) / (self.k2 + fiq)
         product = first_term * second_term * third_term
         return product
+
+    def calc_top_idfs(self):
+        term_idf = []
+        for term in self.query.terms:
+            dfi = self.vector_collection.get_doc_freq(term)
+            idf = math.log((self.num_docs - dfi + 0.5) / (dfi + 0.5))
+            term_idf.append((term, idf))
+        top_idfs = sorted(term_idf, key=lambda x: x[1], reverse=True)
+        if len(top_idfs) > self.sub_idf_top:
+            top_idfs = top_idfs[0:self.sub_idf_top]
+        is_top_idf = {}
+        for term_idf_tup in term_idf:
+            term = term_idf_tup[0]
+            if term_idf_tup in top_idfs:
+                is_top_idf[term] = True
+            else:
+                is_top_idf[term] = False
+        return is_top_idf  # {"term":True/False} AND len(is_top_idf) == len(self.query.terms)
+
 
     # Boosts the query term's score if it is found earlier in the document
     # Compute as a percentage of the way through the document.
