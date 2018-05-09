@@ -5,32 +5,9 @@ import ScoringFunctions as score_fs
 import nltk, json, sys
 from VectorCollection import VectorCollection, VectorType
 from DistanceFunctions import CosineFunction, OkapiFunction, OkapiModFunction, compute_idf
-from WordNet import WordNet
+from WordNet import WordNet, is_noun, is_verb, is_adjective, is_adverb
 from nltk.stem import PorterStemmer
 from multiprocessing import Process, Queue, Array, Manager
-
-
-
-if __name__ == "__main0__":
-    qry = "the crystalline lens in vertebrates, including humans"
-    text = nltk.word_tokenize(qry)
-    tagged = nltk.pos_tag(text)
-    print(tagged)
-
-    wn = WordNet()
-    ps = PorterStemmer()
-    for word in text:
-        print(word + ' --> ' + ps.stem(word))
-
-        list = wn.get_sim_terms_rw(word)
-        print(list)
-        print(wn.stem(ps, word, list))
-        print()
-
-    sum = 0
-    for a in [('man', 0.197934595524957), ('men', 0.15318416523235803), ('world', 0.0981067125645439), ('homo', 0.08605851979345956), ('humankind', 0.06540447504302928), ('mankind', 0.06368330464716007), ('live', 0.046471600688468166), ('earth', 0.03614457831325302), ('erect', 0.030981067125645446), ('extinct', 0.024096385542168676), ('carriag', 0.02237521514629949), ('hominida', 0.020654044750430298), ('articul', 0.020654044750430298), ('speech', 0.020654044750430298), ('intellig', 0.018932874354561105), ('famili', 0.017211703958691912), ('lover', 0.015490533562822723), ('use', 0.015490533562822723), ('superior', 0.015490533562822723), ('member', 0.01376936316695353), ('alway', 0.010327022375215149), ('slight', 0.006884681583476765)]:
-        sum += a[1]
-    print(sum)
 
 
 # Run the func, save the results to the file indicated by the path, and save the MAP score
@@ -53,7 +30,7 @@ def save(func_name, results, avg_map):
     map_file = out_dir + func_name + "_map.txt"
     with open(map_file, 'w') as f:
         f.write(str(avg_map))
-    print("\n" + func_name + ": " + str(avg_map))
+    print("\n-->" + func_name + ": " + str(avg_map))
 
 
 
@@ -112,44 +89,77 @@ def test_sub_idf5():
     run_save(okapi_func, "sub idf top=5 i=.25")
 
 def test_early_all():
-    okapi_func = OkapiModFunction(docs, is_early=True, early_term_influence=2.4)
-    run_save(okapi_func, "early all i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early=True, early_term_influence=1.4)
+    run_save(okapi_func, "early all i=1.4")
 def test_early_noun():
-    okapi_func = OkapiModFunction(docs, is_early_noun=True, early_term_influence=2.4)
-    run_save(okapi_func, "early noun i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_noun=True, early_term_influence=1.2)
+    run_save(okapi_func, "early noun i=1.2")
 def test_early_verb():
-    okapi_func = OkapiModFunction(docs, is_early_verb=True, early_term_influence=2.4)
-    run_save(okapi_func, "early verb i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_verb=True, early_term_influence=1.2)
+    run_save(okapi_func, "early verb i=1.2")
 def test_early_adj():
-    okapi_func = OkapiModFunction(docs, is_early_adj=True, early_term_influence=2.4)
-    run_save(okapi_func, "early adj i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_adj=True, early_term_influence=1.6)
+    run_save(okapi_func, "early adj i=1.6")
 def test_early_adv():
-    okapi_func = OkapiModFunction(docs, is_early_adv=True, early_term_influence=2.4)
-    run_save(okapi_func, "early adv i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_adv=True, early_term_influence=1.2)
+    run_save(okapi_func, "early adv i=1.2")
 def test_early_noun_adj():
-    okapi_func = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=2.4)
-    run_save(okapi_func, "early noun adj i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=1.6)
+    run_save(okapi_func, "early noun adj i=1.6")
 def test_early_verb_adv():
-    okapi_func = OkapiModFunction(docs, is_early_verb_adv=True, early_term_influence=2.4)
-    run_save(okapi_func, "early verb adv i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_verb_adv=True, early_term_influence=1.4)
+    run_save(okapi_func, "early verb adv i=1.4")
 def test_early_not_noun():
-    okapi_func = OkapiModFunction(docs, is_early_not_noun=True, early_term_influence=2.4)
-    run_save(okapi_func, "early not noun i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_not_noun=True, early_term_influence=1.4)
+    run_save(okapi_func, "early not noun i=1.4")
 def test_early_not_verb():
-    okapi_func = OkapiModFunction(docs, is_early_not_verb=True, early_term_influence=2.4)
-    run_save(okapi_func, "early not verb i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_not_verb=True, early_term_influence=1.8)
+    run_save(okapi_func, "early not verb i=1.8")
 def test_early_not_adj():
-    okapi_func = OkapiModFunction(docs, is_early_not_adj=True, early_term_influence=2.4)
-    run_save(okapi_func, "early not adj i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_not_adj=True, early_term_influence=1.2)
+    run_save(okapi_func, "early not adj i=1.2")
 def test_early_not_adv():
-    okapi_func = OkapiModFunction(docs, is_early_not_adv=True, early_term_influence=2.4)
-    run_save(okapi_func, "early not adv i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_not_adv=True, early_term_influence=2.8)
+    run_save(okapi_func, "early not adv i=2.8")
 def test_early_not_verb_adv():
-    okapi_func = OkapiModFunction(docs, is_early_not_verb_adv=True, early_term_influence=2.4)
-    run_save(okapi_func, "early not verb adv i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_not_verb_adv=True, early_term_influence=1.8)
+    run_save(okapi_func, "early not verb adv i=1.8")
 def test_early_not_noun_adj():
-    okapi_func = OkapiModFunction(docs, is_early_not_noun_adj=True, early_term_influence=2.4)
-    run_save(okapi_func, "early not noun adj i=2.4")
+    okapi_func = OkapiModFunction(docs, is_early_not_noun_adj=True, early_term_influence=1.2)
+    run_save(okapi_func, "early not noun adj i=1.2")
+
+def test_noun():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.4)
+    run_save(okapi_func, "noun i=1.4")
+def test_adj():
+    okapi_func = OkapiModFunction(docs, is_adj=True, adj_influence=1.2)
+    run_save(okapi_func, "adj i=1.2")
+def test_verb():
+    okapi_func = OkapiModFunction(docs, is_verb=True, verb_influence=1.2)
+    run_save(okapi_func, "verb i=1.2")
+def test_adv():
+    okapi_func = OkapiModFunction(docs, is_adv=True, adv_influence=2.8)
+    run_save(okapi_func, "adv i=2.8")
+
+def test_is_close_all():
+    okapi_func = OkapiModFunction(docs, is_close_pairs=True, close_pairs_m=-.25, close_pairs_b=1.25)
+    run_save(okapi_func, "close_pairs i=1.25")
+def test_is_adj_noun_linear_pairs():
+    okapi_func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True, adj_noun_pairs_m=-.25, adj_noun_pairs_b=2.0)
+    run_save(okapi_func, "adj_noun_linear_pairs i=2.0")
+def test_is_adv_verb_linear_pairs():
+    okapi_func = OkapiModFunction(docs, is_adv_verb_linear_pairs=True, adv_verb_pairs_m=-.25, adv_verb_pairs_b=1.25)
+    run_save(okapi_func, "adv_verb_linear_pairs i=1.25")
+
+def test_bigrams():
+    okapi_func = OkapiModFunction(docs, is_bigram=True, bigram_influence=1.2)
+    run_save(okapi_func, "bigrams i=1.2")
+def test_adj_noun_bigrams():
+    okapi_func = OkapiModFunction(docs, is_adj_noun_2gram=True, adj_noun_2gram_influence=2.0)
+    run_save(okapi_func, "adj_noun_bigrams i=2.0")
+def test_adv_verb_bigrams():
+    okapi_func = OkapiModFunction(docs, is_adv_verb_2gram=True, adv_verb_2gram_influence=1.2)
+    run_save(okapi_func, "adv_verb_bigrams i=1.2")
 
 # __________________________ Train Linear _______________________________
 def train_sub_all():
@@ -200,21 +210,194 @@ def train_sub_idf3():
         funcs.append((func, "sub_idf top=3" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
+
+def train_is_early_all():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early=True, early_term_influence=influence)
+        funcs.append((func, "early_all" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_is_early_noun():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_noun=True, early_term_influence=influence)
+        funcs.append((func, "early_noun" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_is_early_adj():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_adj=True, early_term_influence=influence)
+        funcs.append((func, "early_adj" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_is_early_verb():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_verb=True, early_term_influence=influence)
+        funcs.append((func, "early_verb" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_is_early_adv():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_adv=True, early_term_influence=influence)
+        funcs.append((func, "early_adv" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
 def train_is_early_noun_adj():
-    influence = 2.0
+    influence = 1.2
     funcs = []
     while influence <= 3.0:
         func = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=influence)
         funcs.append((func, "early_noun_adj" + " i=" + str(influence)))
         influence += 0.2
     run_funcs(funcs)
+def train_is_early_verb_adv():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_verb_adv=True, early_term_influence=influence)
+        funcs.append((func, "early_verb_adv" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+
+def train_early_not_noun():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_not_noun=True, early_term_influence=influence)
+        funcs.append((func, "early_not_noun" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_early_not_verb():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_not_verb=True, early_term_influence=influence)
+        funcs.append((func, "early_not_verb" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_early_not_adj():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_not_adj=True, early_term_influence=influence)
+        funcs.append((func, "early_not_adj" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_early_not_adv():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_not_adv=True, early_term_influence=influence)
+        funcs.append((func, "early_not_adv" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_early_not_verb_adv():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_not_verb_adv=True, early_term_influence=influence)
+        funcs.append((func, "early_not_verb_adv" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_early_not_noun_adj():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_early_not_noun_adj=True, early_term_influence=influence)
+        funcs.append((func, "early_not_noun_adj" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+
+def train_noun():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_noun=True, noun_influence=influence)
+        funcs.append((func, "noun" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_adj():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_adj=True, adj_influence=influence)
+        funcs.append((func, "adj" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_verb():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_verb=True, verb_influence=influence)
+        funcs.append((func, "verb" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_adv():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_adv=True, adv_influence=influence)
+        funcs.append((func, "adv" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+
+def train_is_close_all():
+    influence = 1.25
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_close_pairs=True, close_pairs_m=-.25, close_pairs_b=influence)
+        funcs.append((func, "close_pairs" + " i=" + str(influence)))
+        influence += 0.25
+    run_funcs(funcs)
 def train_is_adj_noun_linear_pairs():
     influence = 1.25
     funcs = []
-    while influence <= 2.0:
-        func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True, adj_noun_pairs_b=influence)
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True, adj_noun_pairs_m=-.25, adj_noun_pairs_b=influence)
         funcs.append((func, "adj_noun_linear_pairs" + " i=" + str(influence)))
         influence += 0.25
+    run_funcs(funcs)
+def train_is_adv_verb_linear_pairs():
+    influence = 1.25
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_adv_verb_linear_pairs=True, adv_verb_pairs_m=-.25, adv_verb_pairs_b=influence)
+        funcs.append((func, "adv_verb_linear_pairs" + " i=" + str(influence)))
+        influence += 0.25
+    run_funcs(funcs)
+
+def train_bigrams():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_bigram=True, bigram_influence=influence)
+        funcs.append((func, "bigrams" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_is_adj_noun_bigrams():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_adj_noun_2gram=True, adj_noun_2gram_influence=influence)
+        funcs.append((func, "adj_noun_bigrams" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_is_adv_verb_bigrams():
+    influence = 1.2
+    funcs = []
+    while influence <= 3.0:
+        func = OkapiModFunction(docs, is_adv_verb_2gram=True, adv_verb_2gram_influence=influence)
+        funcs.append((func, "adv_verb_bigrams" + " i=" + str(influence)))
+        influence += 0.2
     run_funcs(funcs)
 
 def run_funcs(funcs):
@@ -266,7 +449,8 @@ def train_sub_all_old():
     start_processes(process_list, qu)
 
 
-if __name__ == "__main__":
+# _________________________________ Main for Testing and Training ______________________________________
+if __name__ == "__main0__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = abs_path
@@ -298,13 +482,26 @@ if __name__ == "__main__":
     # test_early_adj()
     # test_early_adv()
     # test_early_noun_adj()
-    test_early_verb_adv()
+    # test_early_verb_adv()
     # test_early_not_noun()
     # test_early_not_verb()
     # test_early_not_adj()
     # test_early_not_adv()
     # test_early_not_verb_adv()
-    test_early_not_noun_adj()
+    # test_early_not_noun_adj()
+
+    # test_noun()
+    # test_adj()
+    # test_verb()
+    # test_adv()
+
+    # test_is_close_all()
+    # test_is_adj_noun_linear_pairs()
+    # test_is_adv_verb_linear_pairs()
+
+    # test_bigrams()
+    # test_adj_noun_bigrams()
+    # test_adv_verb_bigrams()
 
     # ___________ Training ___________
     # train_sub_all()
@@ -314,13 +511,59 @@ if __name__ == "__main__":
     # train_sub_adv()
     # train_sub_idf3()
     #
+    # train_is_early_all()
+    # train_is_early_noun()
+    # train_is_early_adj()
     # train_is_early_noun_adj()
-    #
+    # train_is_early_verb()
+    # train_is_early_adv()
+    # train_is_early_verb_adv()
+    # train_early_not_noun()
+    # train_early_not_verb()
+    # train_early_not_adj()
+    # train_early_not_adv()
+    # train_early_not_verb_adv()
+    # train_early_not_noun_adj()
+
+    # train_noun()
+    # train_adj()
+    # train_verb()
+    # train_adv()
+
+    # train_is_close_all()
     # train_is_adj_noun_linear_pairs()
+    # train_is_adv_verb_linear_pairs()
+
+    # train_bigrams()
+    # train_is_adj_noun_bigrams()
+    # train_is_adv_verb_bigrams()
 
     print("Done")
 
+# _________________________________ Main for Sandbox ______________________________________
+if __name__ == "__main0__":
+    qry = "the crystalline lens in vertebrates, including humans"
+    text = nltk.word_tokenize(qry)
+    tagged = nltk.pos_tag(text)
+    print(tagged)
 
+    wn = WordNet()
+    ps = PorterStemmer()
+    for word in text:
+        print(word + ' --> ' + ps.stem(word))
+
+        list = wn.get_sim_terms_rw(word)
+        print(list)
+        print(wn.stem(ps, word, list))
+        print()
+
+    sum = 0
+    for a in [('man', 0.197934595524957), ('men', 0.15318416523235803), ('world', 0.0981067125645439), ('homo', 0.08605851979345956), ('humankind', 0.06540447504302928), ('mankind', 0.06368330464716007), ('live', 0.046471600688468166), ('earth', 0.03614457831325302), ('erect', 0.030981067125645446), ('extinct', 0.024096385542168676), ('carriag', 0.02237521514629949), ('hominida', 0.020654044750430298), ('articul', 0.020654044750430298), ('speech', 0.020654044750430298), ('intellig', 0.018932874354561105), ('famili', 0.017211703958691912), ('lover', 0.015490533562822723), ('use', 0.015490533562822723), ('superior', 0.015490533562822723), ('member', 0.01376936316695353), ('alway', 0.010327022375215149), ('slight', 0.006884681583476765)]:
+        sum += a[1]
+    print(sum)
+
+
+# _________________________________ Main Old ______________________________________
 if __name__ == "__main0__":
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
@@ -378,10 +621,11 @@ if __name__ == "__main0__":
     print("Best MAP = " + str(best_map))
 
 
+# _________________________________ Main for Graphing P+R Curves ______________________________________
 if __name__ == "__main0__":
     score_fs.graph_precision_recall(225)
 
-
+# _________________________________ Main for Evaluating Individual Results ______________________________________
 if __name__ == "__main0__":
     # Determine the maximum number of documents/score my system can return without word substitutions
     docs = VectorCollection("/Users/Eric/Desktop/Thesis/projects/datasets/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
@@ -428,6 +672,48 @@ if __name__ == "__main0__":
             print('Doc id:' + str(doc_id) + ', len=' + str(len(term_intersect)) + ', terms = ' + str(term_intersect) + ', ' + str(idf))
 
 
+# _________________________________ Main for Obtaining Doc and Query Metadata ______________________________________
+def get_vector_metadata(vc: VectorCollection):
+    vectors = terms = nouns = adjs = verbs = advs = other = 0
+    for tvector in vc.id_to_textvector.values():
+        vectors += 1
+        for pos in tvector.terms_pos:
+            terms += 1
+            if is_noun(pos):
+                nouns += 1
+            elif is_adjective(pos):
+                adjs += 1
+            elif is_verb(pos):
+                verbs += 1
+            elif is_adverb(pos):
+                advs += 1
+            else:
+                other += 1
+    avg_terms = terms / vectors
+    avg_nouns = nouns / vectors
+    avg_adjs = adjs / vectors
+    avg_verbs = verbs / vectors
+    avg_advs = advs / vectors
+    avg_other = other / vectors if other > 0 else 0
+    return (avg_terms, avg_nouns, avg_adjs, avg_verbs, avg_advs, avg_other)
+
+if __name__ == "__main__":
+    abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
+    rel_path = "../datasets"
+    f_path = abs_path
+    # docs, qrys, relevant_docs, dir = read_cran(f_path)
+    # docs, qrys, relevant_docs, dir = read_adi(f_path)
+    docs, qrys, relevant_docs, dir = read_med(f_path)
+
+    out_dir = "out/" + dir
+    avg_terms, avg_nouns, avg_adjs, avg_verbs, avg_advs, avg_other = get_vector_metadata(qrys)
+    print("Queries:")
+    print("Terms="+str(avg_terms) + ", Nouns="+str(avg_nouns) + ", Adjs="+str(avg_adjs) +
+          ", Verbs="+str(avg_verbs) + ", Advs="+str(avg_advs) + ", Other="+str(avg_other))
+    print("Documents:")
+    avg_terms, avg_nouns, avg_adjs, avg_verbs, avg_advs, avg_other = get_vector_metadata(docs)
+    print("Terms="+str(avg_terms) + ", Nouns="+str(avg_nouns) + ", Adjs="+str(avg_adjs) +
+          ", Verbs="+str(avg_verbs) + ", Advs="+str(avg_advs) + ", Other="+str(avg_other))
 
 
 

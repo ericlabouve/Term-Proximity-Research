@@ -201,14 +201,15 @@ class OkapiModFunction(DistanceFunction):
 
                  is_early_q=False, is_early_q_noun=False, is_early_q_verb=False,
 
-                 is_close_pairs=False, close_pairs_influence=2.0,
+                 is_close_pairs=False, close_pairs_m=-0.25, close_pairs_b=2,
 
-                 is_noun=False, noun_influence=1.0,
-                 is_verb=False, verb_influence=1.0,
+                 is_noun=False, noun_influence=1.0, is_adj=False, adj_influence=1.0,
+                 is_verb=False, verb_influence=1.0, is_adv=False, adv_influence=1.0,
 
+                 is_bigram=False, bigram_influence=1.4,
                  is_adj_noun_pairs=False, adj_noun_pairs_influence=1.8, is_adj_noun_2gram=False, adj_noun_2gram_influence=2.0,
                  is_adj_noun_linear_pairs=False, adj_noun_pairs_m=-0.25, adj_noun_pairs_b=1.5,
-                 is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2,
+                 is_adv_verb_pairs=False, adv_verb_pairs_influence=1.2, is_adv_verb_2gram=False, adv_verb_2gram_influence=2.0,
                  is_adv_verb_linear_pairs=False, adv_verb_pairs_m=-0.25, adv_verb_pairs_b=1.25,
 
                  is_sub_all=False, is_sub_noun=False, is_sub_verb=False, is_sub_adj=False, is_sub_adv=False, sub_prob=0.25,
@@ -242,22 +243,31 @@ class OkapiModFunction(DistanceFunction):
         self.is_early_q = is_early_q
         self.is_early_q_noun = is_early_q_noun
         self.is_early_q_verb = is_early_q_verb
+        # Bigram variables
+        self.is_bigram = is_bigram
+        self.bigram_influence = bigram_influence
+        self.is_adj_noun_2gram = is_adj_noun_2gram
+        self.adj_noun_2gram_influence = adj_noun_2gram_influence
+        self.is_adv_verb_2gram = is_adv_verb_2gram
+        self.adv_verb_2gram_influence = adv_verb_2gram_influence
         # is_close_pairs variables
         self.is_close_pairs = is_close_pairs
-        self.close_pairs_influence = close_pairs_influence
+        self.close_pairs_m = close_pairs_m
+        self.close_pairs_b = close_pairs_b
         self.last_term = None
-        # is_noun variables
+        # is noun, verb, adj, adv variables
         self.is_noun = is_noun
         self.noun_influence = noun_influence
-        # is_verb variables
+        self.is_adj = is_adj
+        self.adj_influence = adj_influence
         self.is_verb = is_verb
         self.verb_influence = verb_influence
+        self.is_adv = is_adv
+        self.adv_influence = adv_influence
         # is_adj_noun_pairs variables
         self.is_adj_noun_pairs = is_adj_noun_pairs
-        self.is_adj_noun_2gram = is_adj_noun_2gram
         self.is_adj_noun_linear_pairs = is_adj_noun_linear_pairs
         self.adj_noun_pairs_influence = adj_noun_pairs_influence
-        self.adj_noun_2gram_influence = adj_noun_2gram_influence
         self.adj_noun_pairs_m = adj_noun_pairs_m
         self.adj_noun_pairs_b = adj_noun_pairs_b
         # is_adj_noun_pairs variables
@@ -354,23 +364,23 @@ class OkapiModFunction(DistanceFunction):
             if self.is_noun:
                 if wn.is_noun(pos):
                     boosts.append(boost(product, self.noun_influence))
+            if self.is_adj:
+                if wn.is_adjective(pos):
+                    boosts.append(boost(product, self.adj_influence))
             if self.is_verb:
                 if wn.is_verb(pos):
                     boosts.append(boost(product, self.verb_influence))
+            if self.is_adv:
+                if wn.is_adverb(pos):
+                    boosts.append(boost(product, self.adv_influence))
 
             if self.is_close_pairs:
                 boosts.append(boost(product, self.close_pairs(term)))
                 self.last_term = term
-
             if self.is_adj_noun_pairs:
                 # If the last adjective in the query is before the current noun
                 if self.adj_noun_pairs(term, pos):
                     boosts.append(boost(product, self.adj_noun_pairs_influence))
-                self.last_term_pos = (term, pos)
-            if self.is_adj_noun_2gram:
-                # If the last adjective in the query is right before the current noun
-                if self.adj_noun_2gram(term, pos):
-                    boosts.append(boost(product, self.adj_noun_2gram_influence))
                 self.last_term_pos = (term, pos)
             if self.is_adj_noun_linear_pairs:
                 boosts.append(boost(product, self.adj_noun_pairs_linear(term, pos)))
@@ -382,6 +392,22 @@ class OkapiModFunction(DistanceFunction):
                 self.last_term_pos = (term, pos)
             if self.is_adv_verb_linear_pairs:
                 boosts.append(boost(product, self.adv_verb_pairs_linear(term, pos)))
+                self.last_term_pos = (term, pos)
+
+            if self.is_bigram:
+                # If the last term in the query is right before the current term
+                if self.bigram(term, pos):
+                    boosts.append(boost(product, self.bigram_influence))
+                self.last_term_pos = (term, pos)
+            if self.is_adj_noun_2gram:
+                # If the last adjective in the query is right before the current noun
+                if self.adj_noun_2gram(term, pos):
+                    boosts.append(boost(product, self.adj_noun_2gram_influence))
+                self.last_term_pos = (term, pos)
+            if self.is_adv_verb_2gram:
+                # If the last adverb in the query is right before the current verb
+                if self.adv_verb_2gram(term, pos):
+                    boosts.append(boost(product, self.adv_verb_2gram_influence))
                 self.last_term_pos = (term, pos)
 
             if self.is_sub_all:
@@ -506,8 +532,9 @@ class OkapiModFunction(DistanceFunction):
     # Gives an extra boost to adjacent query terms that are near each other
     # in the document. Idea is to give nonlinear reward for terms that are close
     # Evaluate only the closest pair of terms between the two postings.
-    # Range of values: [2, 1]
-    # boost = 2 / min_distance
+    # Range of values: [influence, 1] the smallest value for min_distance is 1
+    # boost = max(m * (x=smallest dist) + (b - m), 1)
+    # Want the y intercept to be b-m so that when x=1, b=close_pairs_b
     def close_pairs(self, term):
         if self.last_term is None:
             self.last_term = term
@@ -541,7 +568,7 @@ class OkapiModFunction(DistanceFunction):
                 dif = abs(ar1[i] - ar2[j])
                 min_dif = min(min_dif, dif)
                 j += 1
-        result = self.close_pairs_influence / min_dif
+        result = max(self.close_pairs_m * min_dif + (self.close_pairs_b - self.close_pairs_m), 1)
         return result
 
     # Gives an extra boost to adjectives and nouns that are found near each other
@@ -568,6 +595,26 @@ class OkapiModFunction(DistanceFunction):
         return False
 
     # Gives an extra boost to adjectives and nouns that are found right next to each other,
+    def bigram(self, term, pos):
+        if self.last_term_pos is None:
+            self.last_term_pos = (term, pos)
+            return False
+        # Get term locations inside this document
+        posting1 = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+        posting2 = self.vector_collection.get_term_posting_for_doc(self.last_term_pos[0], self.doc.id)
+        # Determine if both terms appear in the document
+        if posting1 is None or posting2 is None:
+            return False
+        # Boost if ADJ and NOUN appear in same sentence and right after each other as they do in the query
+        sentences = zip(posting1.sentence, posting2.sentence)
+        for idx, s1_s2 in enumerate(sentences):
+            s1 = s1_s2[0]
+            s2 = s1_s2[1]
+            if s1 == s2 and ((posting1.offsets[idx] - posting2.offsets[idx]) == 1):
+                return True
+        return False
+
+    # Gives an extra boost to adjectives and nouns that are found right next to each other,
     def adj_noun_2gram(self, term, pos):
         if self.last_term_pos is None:
             self.last_term_pos = (term, pos)
@@ -581,6 +628,28 @@ class OkapiModFunction(DistanceFunction):
             if posting1 is None or posting2 is None:
                 return False
             # Boost if ADJ and NOUN appear in same sentence and right after each other as they do in the query
+            sentences = zip(posting1.sentence, posting2.sentence)
+            for idx, s1_s2 in enumerate(sentences):
+                s1 = s1_s2[0]
+                s2 = s1_s2[1]
+                if s1 == s2 and ((posting1.offsets[idx] - posting2.offsets[idx]) == 1):
+                    return True
+        return False
+
+    # Gives an extra boost to adverbs and verbs that are found right next to each other,
+    def adv_verb_2gram(self, term, pos):
+        if self.last_term_pos is None:
+            self.last_term_pos = (term, pos)
+            return False
+        # If there is an adjacent adjective and noun in the query
+        if wn.is_adverb(self.last_term_pos[1]) and wn.is_verb(pos):
+            # Get term locations inside this document
+            posting1 = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+            posting2 = self.vector_collection.get_term_posting_for_doc(self.last_term_pos[0], self.doc.id)
+            # Determine if both terms appear in the document
+            if posting1 is None or posting2 is None:
+                return False
+            # Boost if ADV and VERB appear in same sentence and right after each other as they do in the query
             sentences = zip(posting1.sentence, posting2.sentence)
             for idx, s1_s2 in enumerate(sentences):
                 s1 = s1_s2[0]
