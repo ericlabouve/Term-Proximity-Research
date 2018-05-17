@@ -245,7 +245,15 @@ def read_human_judgement_MED(file_path, best_score, worst_score):
     return relevant_docs
 
 
-
+def read_human_judgement_TIME(file_path):
+    relevant_docs = defaultdict(list)
+    with open(file_path) as file:
+        for line in file:
+            items = line.split()
+            query_num = int(items[0])
+            for doc_num in items[1:]:
+                relevant_docs[query_num].append(int(doc_num))
+    return relevant_docs
 
 
 

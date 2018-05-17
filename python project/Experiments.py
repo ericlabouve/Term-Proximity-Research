@@ -37,8 +37,11 @@ def save(func_name, results, avg_map):
 
 # _____________Functions for reading documents, queries and relevant documents_____________
 
-def read_cran(path):
-    docs = VectorCollection(path + "/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+def read_cran(path, title=True):
+    if title:
+        docs = VectorCollection(path + "/cran/cran.all.1400", VectorType.DOCUMENTS, stemming_on=True)
+    else:
+        docs = VectorCollection(path + "/cran/cran.notitle.all.1400", VectorType.DOCUMENTS, stemming_on=True)
     qrys = VectorCollection(path + "/cran/cran.qry", VectorType.QUERIES, stemming_on=True)
     relevant_docs = score_fs.read_human_judgement(path + "/cran/cranqrel", 1, 3)
     return docs, qrys, relevant_docs, "cran/"
@@ -52,6 +55,11 @@ def read_med(path):
     qrys = VectorCollection(path + "/med/MED.QRY", VectorType.QUERIES, stemming_on=True)
     relevant_docs = score_fs.read_human_judgement_MED(path + "/med/MED.REL", 1, 1)  # DIFFERENT FORMAT
     return docs, qrys, relevant_docs, "med/"
+def read_time(path):
+    docs = VectorCollection(path + "/time/TIME_clean.ALL", VectorType.DOCUMENTS, stemming_on=True)
+    qrys = VectorCollection(path + "/time/TIME_clean.QUE", VectorType.QUERIES, stemming_on=True)
+    relevant_docs = score_fs.read_human_judgement_TIME(path + "/time/TIME_clean.REL")
+    return docs, qrys, relevant_docs, "time/"
 
 # __________________________ Tests _______________________________
 def test_cosine():
@@ -84,9 +92,12 @@ def test_sub_adj():
 def test_sub_adv():
     okapi_func = OkapiModFunction(docs, is_sub_adv=True, sub_prob=0.25)
     run_save(okapi_func, "sub adv i=.25")
-def test_sub_idf5():
-    okapi_func = OkapiModFunction(docs, is_sub_idf=True, sub_prob=0.25, sub_idf_top=5)
+def test_sub_idf_top():
+    okapi_func = OkapiModFunction(docs, is_sub_idf_top=True, sub_prob=0.25, sub_idf_top=5)
     run_save(okapi_func, "sub idf top=5 i=.25")
+def test_sub_idf_bottom():
+    okapi_func = OkapiModFunction(docs, is_sub_idf_bottom=True, sub_prob=0.25, sub_idf_bottom=5)
+    run_save(okapi_func, "sub idf bottom=5 i=.25")
 
 def test_early_all():
     okapi_func = OkapiModFunction(docs, is_early=True, early_term_influence=1.4)
@@ -140,6 +151,18 @@ def test_verb():
 def test_adv():
     okapi_func = OkapiModFunction(docs, is_adv=True, adv_influence=2.8)
     run_save(okapi_func, "adv i=2.8")
+def test_noun2():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=0.8)
+    run_save(okapi_func, "noun i=0.8")
+def test_adj2():
+    okapi_func = OkapiModFunction(docs, is_adj=True, adj_influence=0.8)
+    run_save(okapi_func, "adj i=0.8")
+def test_verb2():
+    okapi_func = OkapiModFunction(docs, is_verb=True, verb_influence=0.4)
+    run_save(okapi_func, "verb i=0.4")
+def test_adv2():
+    okapi_func = OkapiModFunction(docs, is_adv=True, adv_influence=0.8)
+    run_save(okapi_func, "adv i=0.8")
 
 def test_is_close_all():
     okapi_func = OkapiModFunction(docs, is_close_pairs=True, close_pairs_m=-.25, close_pairs_b=1.25)
@@ -202,12 +225,20 @@ def train_sub_adv():
         funcs.append((func, "sub_adv" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
-def train_sub_idf3():
+def train_sub_idf_top():
     influence = 0.02
     funcs = []
     while influence <= 0.1:
-        func = OkapiModFunction(docs, is_sub_idf=True, sub_prob=influence, sub_idf_top=3)
-        funcs.append((func, "sub_idf top=3" + " i=" + str(influence)))
+        func = OkapiModFunction(docs, is_sub_idf_top=True, sub_prob=influence, sub_idf_top=5)
+        funcs.append((func, "sub_idf top=5" + " i=" + str(influence)))
+        influence += 0.02
+    run_funcs(funcs)
+def train_sub_idf_bottom():
+    influence = 0.02
+    funcs = []
+    while influence <= 0.1:
+        func = OkapiModFunction(docs, is_sub_idf_bottom=True, sub_prob=influence, sub_idf_bottom=5)
+        funcs.append((func, "sub_idf bottom=5" + " i=" + str(influence)))
         influence += 0.02
     run_funcs(funcs)
 
@@ -349,6 +380,38 @@ def train_adv():
         funcs.append((func, "adv" + " i=" + str(influence)))
         influence += 0.2
     run_funcs(funcs)
+def train_noun2():
+    influence = .2
+    funcs = []
+    while influence <= 0.8:
+        func = OkapiModFunction(docs, is_noun=True, noun_influence=influence)
+        funcs.append((func, "noun" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_adj2():
+    influence = .2
+    funcs = []
+    while influence <= 0.8:
+        func = OkapiModFunction(docs, is_adj=True, adj_influence=influence)
+        funcs.append((func, "adj" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_verb2():
+    influence = .2
+    funcs = []
+    while influence <= 0.8:
+        func = OkapiModFunction(docs, is_verb=True, verb_influence=influence)
+        funcs.append((func, "verb" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
+def train_adv2():
+    influence = .2
+    funcs = []
+    while influence <= 0.8:
+        func = OkapiModFunction(docs, is_adv=True, adv_influence=influence)
+        funcs.append((func, "adv" + " i=" + str(influence)))
+        influence += 0.2
+    run_funcs(funcs)
 
 def train_is_close_all():
     influence = 1.25
@@ -450,31 +513,33 @@ def train_sub_all_old():
 
 
 # _________________________________ Main for Testing and Training ______________________________________
-if __name__ == "__main0__":
+if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = abs_path
-#    docs, qrys, relevant_docs, dir = read_cran(f_path)
+    docs, qrys, relevant_docs, dir = read_cran(f_path, title=False)
 #    docs, qrys, relevant_docs, dir = read_adi(f_path)
-    docs, qrys, relevant_docs, dir = read_med(f_path)
+#    docs, qrys, relevant_docs, dir = read_med(f_path)
+#    docs, qrys, relevant_docs, dir = read_time(f_path)
 
     query_limit = -1  # Use all queries
     doc_limit = -1  # Use all documents
-    out_dir = "out/" + dir
+    out_dir = "out/train_cran/" + dir
 
     # ___________ Tests ___________
-    #test_cosine()
-    #test_okapi()
-
-    #test_is_remove_adj()
-    #test_is_remove_adv()
+    # test_cosine()
+    # test_okapi()
+    #
+    # test_is_remove_adj()
+    # test_is_remove_adv()
 
     # test_sub_all()
     # test_sub_noun()
     # test_sub_verb()
     # test_sub_adj()
     # test_sub_adv()
-    # test_sub_idf5()
+    # test_sub_idf_top()
+    # test_sub_idf_bottom()
 
     # test_early_all()
     # test_early_noun()
@@ -494,6 +559,10 @@ if __name__ == "__main0__":
     # test_adj()
     # test_verb()
     # test_adv()
+    # test_noun2()
+    # test_adj2()
+    # test_verb2()
+    # test_adv2()
 
     # test_is_close_all()
     # test_is_adj_noun_linear_pairs()
@@ -509,8 +578,9 @@ if __name__ == "__main0__":
     # train_sub_verb()
     # train_sub_adj()
     # train_sub_adv()
-    # train_sub_idf3()
-    #
+    # train_sub_idf_top()
+    # train_sub_idf_bottom()
+
     # train_is_early_all()
     # train_is_early_noun()
     # train_is_early_adj()
@@ -529,14 +599,18 @@ if __name__ == "__main0__":
     # train_adj()
     # train_verb()
     # train_adv()
+    # train_noun2()
+    # train_adj2()
+    # train_verb2()
+    # train_adv2()
 
-    # train_is_close_all()
-    # train_is_adj_noun_linear_pairs()
-    # train_is_adv_verb_linear_pairs()
+    train_is_close_all()
+    train_is_adj_noun_linear_pairs()
+    train_is_adv_verb_linear_pairs()
 
-    # train_bigrams()
-    # train_is_adj_noun_bigrams()
-    # train_is_adv_verb_bigrams()
+    train_bigrams()
+    train_is_adj_noun_bigrams()
+    train_is_adv_verb_bigrams()
 
     print("Done")
 
@@ -697,13 +771,14 @@ def get_vector_metadata(vc: VectorCollection):
     avg_other = other / vectors if other > 0 else 0
     return (avg_terms, avg_nouns, avg_adjs, avg_verbs, avg_advs, avg_other)
 
-if __name__ == "__main__":
+if __name__ == "__main0__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = abs_path
-    # docs, qrys, relevant_docs, dir = read_cran(f_path)
+    docs, qrys, relevant_docs, dir = read_cran(f_path, title=False)
     # docs, qrys, relevant_docs, dir = read_adi(f_path)
-    docs, qrys, relevant_docs, dir = read_med(f_path)
+    # docs, qrys, relevant_docs, dir = read_med(f_path)
+    # docs, qrys, relevant_docs, dir = read_time(f_path)
 
     out_dir = "out/" + dir
     avg_terms, avg_nouns, avg_adjs, avg_verbs, avg_advs, avg_other = get_vector_metadata(qrys)
