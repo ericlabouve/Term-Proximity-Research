@@ -4,7 +4,7 @@
 from collections import defaultdict
 from matplotlib import style
 import matplotlib.pyplot as plt
-import sys, json
+import sys, json, os
 
 
 # ______________________ Precision, Recall, MAP, and F-Score Functions ___________________
@@ -56,6 +56,50 @@ def intersection(l1: list, l2: list) -> set:
     keys_v1 = set(l1)
     keys_v2 = set(l2)
     return keys_v1 & keys_v2  # items that v1 and v2 share
+
+
+# Calculate the weighted average recall for nDocs number of returned documents for all
+# files in the specified directory, dir
+# Weighted by the number of relevant documents in each query. (See finalPractice.pdf from CSC466 for equation)
+# Equation:     Weighted Recall = Sum(Recall * (Num True Positives / Total Num Rel Docs Including Duplicate Docs))
+def calc_all_recall(dir: str, nDir: list):
+    # Open relevant list
+    with open(dir + 'human_judgement.json') as f:
+        human_judgement = json.load(f)
+
+    # Loop through each file name in the directory
+    for filename in os.listdir(dir):
+        if filename == 'human_judgement.json' or '.txt' in filename:
+            continue
+        print(filename)
+        with open(dir + filename) as f:
+            results = json.load(f)
+
+        # Get Total Num Rel Docs Including Duplicate Docs
+        totalRel = 0
+        for qryID in results.keys():
+            # Only evaluate processed queries
+            if qryID not in human_judgement:
+                continue
+            totalRel += len(human_judgement[qryID])
+
+        # Calculate the recall at each level in nDir
+        for level in nDir:
+            weightedRecall = 0
+            # For each query and the resulting returned documents
+            for qryID, docList in results.items():
+                # Only evaluate processed queries
+                if qryID not in human_judgement:
+                    continue
+                # Obtain the |level| number of returned document
+                levelDocs = docList[0:level]
+                # Determine how many of these documents are relevant
+                recall = len(intersection(levelDocs, human_judgement[qryID])) / len(human_judgement[qryID])
+                weightedRecall += recall * (len(human_judgement[qryID]) / totalRel)
+                # print('Recall at ' + str(level) + ' for ' + filename + ' on query ' + str(qryID) + ' = ' + str(recall))
+            print('@' + str(level) + ' = ' + str(weightedRecall))
+        print()
+
 
 
 # ______________________ Graphing Functions ___________________

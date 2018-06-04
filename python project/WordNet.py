@@ -29,11 +29,16 @@ class WordNet:
 
     def __init__(self):
         self.json_base_dir = '../json/'
+        # Probability Graph
         self.adj_list_json = json.load(open(self.json_base_dir + 'adjList.json'))
         self.edge_list_json = json.load(open(self.json_base_dir + 'edgeList.json'))
         self.id_to_label_json = json.load(open(self.json_base_dir + 'idToLabel.json'))
         self.label_to_id_json = json.load(open(self.json_base_dir + 'labelToId.json'))
         self.wf_vertex_db_json = json.load(open(self.json_base_dir + 'wfVertexDb.json'))
+        self.mean = 0.0218491059747  # After Stem
+        self.stdev = 0.0447852647134  # After Stem
+        # API
+        self.api_subs_json = json.load(open('substitutions_wordnet.json'))
 
     # Computes the similarity between two terms as the probability of reaching term2 from term1 and reaching
     # term1 from term1. The equation is: [P(term1 | term2) + P(term1 | term2)] / 2
@@ -212,6 +217,24 @@ class WordNet:
                     if word not in synonyms and not ngram:
                         synonyms.append(word)
         return synonyms
+
+    # Get substitution terms from precomputed json
+    def get_api_subs(self, term, corpus, qID):
+
+        # try:
+        #     if term not in self.api_subs_json[corpus][qID]:
+        #         pass
+        # except:
+        #     pass
+
+        if term not in self.api_subs_json[corpus][qID]:
+            return []
+        else:
+            sub_terms = self.api_subs_json[corpus][qID][term]
+            if sub_terms is None:
+                return []
+            else:
+                return sub_terms
 
     # Stems all terms in the term_prob tuple list
     # Combines tuples that stem to the same term

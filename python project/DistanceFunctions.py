@@ -49,11 +49,14 @@
 
 import math
 import sys
-
 import DocumentVector
 import QueryVector
 import VectorCollection
 import WordNet as wn
+from Word2Vec import Word2Vec
+
+
+wordnet = wn.WordNet()
 
 
 class DistanceFunction:
@@ -157,6 +160,9 @@ def boost(cur_score: float, influence: float) -> float:
         return (abs(cur_score) * influence) - abs(cur_score)
 
 
+w2v = Word2Vec()
+
+
 # cran: query_limit=225, doc_limit=20: MAP=0.25494314903429477
 class OkapiFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection):
@@ -214,6 +220,12 @@ class OkapiModFunction(DistanceFunction):
 
                  is_sub_all=False, is_sub_noun=False, is_sub_verb=False, is_sub_adj=False, is_sub_adv=False, sub_prob=0.25,
                  is_sub_idf_top=False, sub_idf_top=5, is_sub_idf_bottom=False, sub_idf_bottom=5,
+
+                 is_sub_api_all=False, is_sub_api_noun=False, is_sub_api_verb=False, is_sub_api_adj=False, is_sub_api_adv=False, sub_api_infl=0.9,
+                 is_sub_api_idf_top=False, sub_api_idf_top=5, is_sub_api_idf_bottom=False, sub_api_idf_bottom=5, sub_api_dir='',
+
+                 is_w2v_sub_all=False, is_w2v_sub_noun=False, is_w2v_sub_verb=False, is_w2v_sub_adj=False, is_w2v_sub_adv=False, w2v_sub_sim=0.25,
+                 is_w2v_sub_idf_top=False, w2v_sub_idf_top=5, is_w2v_sub_idf_bottom=False, w2v_sub_idf_bottom=5,
 
                  is_remove_adj=False, is_remove_adv=False):
 
@@ -287,6 +299,29 @@ class OkapiModFunction(DistanceFunction):
         self.sub_idf_top = sub_idf_top
         self.is_sub_idf_bottom = is_sub_idf_bottom
         self.sub_idf_bottom = sub_idf_bottom
+        # Word substitutions from WordNet API
+        self.is_sub_api_all = is_sub_api_all
+        self.is_sub_api_noun = is_sub_api_noun
+        self.is_sub_api_verb = is_sub_api_verb
+        self.is_sub_api_adj = is_sub_api_adj
+        self.is_sub_api_adv = is_sub_api_adv
+        self.sub_api_infl = sub_api_infl
+        self.is_sub_api_idf_top = is_sub_api_idf_top
+        self.sub_api_idf_top = sub_api_idf_top
+        self.is_sub_api_idf_bottom = is_sub_api_idf_bottom
+        self.sub_api_idf_bottom = sub_api_idf_bottom
+        self.sub_api_dir = sub_api_dir
+        # Word substitutions from Word2Vec
+        self.is_w2v_sub_all = is_w2v_sub_all
+        self.is_w2v_sub_noun = is_w2v_sub_noun
+        self.is_w2v_sub_verb = is_w2v_sub_verb
+        self.is_w2v_sub_adj = is_w2v_sub_adj
+        self.is_w2v_sub_adv = is_w2v_sub_adv
+        self.w2v_sub_sim = w2v_sub_sim
+        self.is_w2v_sub_idf_top = is_w2v_sub_idf_top
+        self.w2v_sub_idf_top = w2v_sub_idf_top
+        self.is_w2v_sub_idf_bottom = is_w2v_sub_idf_bottom
+        self.w2v_sub_idf_bottom = w2v_sub_idf_bottom
         # remove variables
         self.is_remove_adj = is_remove_adj
             # Only include adj if next doc term matches next query term
@@ -302,9 +337,9 @@ class OkapiModFunction(DistanceFunction):
         terms = []
 
         # Need to know idf scores ahead of time
-        if self.is_sub_idf_top:
+        if self.is_sub_idf_top or self.is_w2v_sub_idf_top or self.is_sub_api_idf_top:
             is_top_idf_map = self.calc_idfs(self.sub_idf_top, top=True)
-        if self.is_sub_idf_bottom:
+        if self.is_sub_idf_bottom or self.is_w2v_sub_idf_bottom or self.is_sub_api_idf_bottom:
             is_bottom_idf_map = self.calc_idfs(self.sub_idf_bottom, top=False)
 
         # Traverse query terms in order of how they appear
@@ -435,6 +470,48 @@ class OkapiModFunction(DistanceFunction):
                 if is_bottom_idf_map[term]:
                     self.substitute(sub_boosts, subs)
 
+            if self.is_sub_api_all:
+                self.substitute_wn_api(sub_boosts, term)
+            if self.is_sub_api_noun:
+                if wn.is_noun(pos):
+                    self.substitute_wn_api(sub_boosts, term)
+            if self.is_sub_api_verb:
+                if wn.is_verb(pos):
+                    self.substitute_wn_api(sub_boosts, term)
+            if self.is_sub_api_adj:
+                if wn.is_adjective(pos):
+                    self.substitute_wn_api(sub_boosts, term)
+            if self.is_sub_api_adv:
+                if wn.is_adverb(pos):
+                    self.substitute_wn_api(sub_boosts, term)
+            if self.is_sub_api_idf_top:
+                if is_top_idf_map[term]:
+                    self.substitute_wn_api(sub_boosts, term)
+            if self.is_sub_api_idf_bottom:
+                if is_bottom_idf_map[term]:
+                    self.substitute_wn_api(sub_boosts, term)
+
+            if self.is_w2v_sub_all:
+                self.substitute_w2v(sub_boosts, term)
+            if self.is_w2v_sub_noun:
+                if wn.is_noun(pos):
+                    self.substitute_w2v(sub_boosts, term)
+            if self.is_w2v_sub_verb:
+                if wn.is_verb(pos):
+                    self.substitute_w2v(sub_boosts, term)
+            if self.is_w2v_sub_adj:
+                if wn.is_adjective(pos):
+                    self.substitute_w2v(sub_boosts, term)
+            if self.is_w2v_sub_adv:
+                if wn.is_adverb(pos):
+                    self.substitute_w2v(sub_boosts, term)
+            if self.is_w2v_sub_idf_top:  # substitute for the terms with the top idf scores
+                if is_top_idf_map[term]:
+                    self.substitute_w2v(sub_boosts, term)
+            if self.is_w2v_sub_idf_bottom:  # substitute for the terms with the bottom idf scores
+                if is_bottom_idf_map[term]:
+                    self.substitute_w2v(sub_boosts, term)
+
             if self.is_remove_adj:  # Needs to be last
                 if wn.is_adjective(pos):
                     self.remove_adj_boosts = product + sum(boosts) + sum(sub_boosts)
@@ -475,6 +552,16 @@ class OkapiModFunction(DistanceFunction):
             if prob > self.sub_prob:
                 weight = self.okapi(sub_term) * prob
                 sub_boosts.append(weight)
+
+    def substitute_w2v(self, sub_boosts, term):
+        for sub_term, sim in w2v.get(term, minc=self.w2v_sub_sim):
+            weight = self.okapi(sub_term) * sim
+            sub_boosts.append(weight)
+
+    def substitute_wn_api(self, sub_boosts, term):
+        for sub_term in wordnet.get_api_subs(term, self.sub_api_dir, str(self.query.id)):
+            weight = self.okapi(sub_term) * self.sub_api_infl
+            sub_boosts.append(weight)
 
     def okapi(self, term):
         dfi = self.vector_collection.get_doc_freq(term)

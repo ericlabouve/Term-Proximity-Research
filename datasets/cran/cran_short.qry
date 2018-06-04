@@ -1,0 +1,674 @@
+.I 001
+.W
+similarity laws for aeroelastic aircrafts .
+.I 002
+.W
+structural and aeroelastic aircraft flight problems
+.I 004
+.W
+problems solved in composite slab conduction
+.I 008
+.W
+criterion of flow solutions for gas mixtures in chemical equilibrium .
+.I 009
+chemical kinetic systems problems for hypersonic aerodynamic
+.I 010
+.W
+turbulent couette flow behaviour .
+.I 012
+.W
+pressure distributions for an ogive forebody at zero angle of attack.
+.I 013
+.W
+methods for predicting body pressures at angle of attack.
+.I 015
+.W
+internal slip flow heat transfer studies .
+.I 018
+.W
+enthalpies and densities for air.
+.I 022
+.W
+strong blast wave similar solution in newtonian approximation .
+.I 023
+.W
+aerodynamic performance of channel flow
+.I 026
+.W
+transonic aileron buzz .
+.I 027
+.W
+shock sound waves  .
+.I 029
+.W
+material properties of photoelastic materials .
+.I 031
+.W
+calculate transverse potential flow 
+.I 032
+.W
+reduce transverse potential flow from three to two dimensions
+.I 033
+.W
+pressure distributions on bodies of revolution at angle of attack .
+.I 034
+.W
+treatment of re-entry and results
+.I 035
+.W
+joule heating and induced current in magnetohydrodynamic free convection flows
+.I 039
+.W
+compressibility transformation fail with helium and air .
+.I 040
+.W
+turbulent skin friction and viscosity with temperature .
+.I 041
+.W
+unsteady aerodynamics .
+.I 049
+.W
+inverting structural matrices .
+.I 050
+.W
+practical flow and adjacent blade rows of a supersonic cascade .
+.I 051
+.W
+formula for the displacement thickness of a laminar boundary layer .
+.I 052
+.W
+ring design and thickness .
+.I 053
+.W
+linear theory design of curved wings .
+.I 054
+.W
+cross sectional shape on delta wings with sharp edges .
+.I 055
+.W
+flow visualization on slender conical wings .
+.I 056
+.W
+end plate size for two-dimensional flow conditions over a bluff cylindrical body 
+.I 057
+.W
+correction for thickness in slender thin-wing theory .
+.I 058
+.W
+interference-free longitudinal stability measurements and low-blockage wind tunnel .
+.I 059
+.W
+wind tunnel interference effects 
+.I 061
+.W
+acoustic wave propagation in reacting gases .
+.I 062
+.W
+relaxation effects on gaseous heat transfer to heat wall .
+.I 066
+.W
+predicting base pressure .
+.I 067
+.W
+hypersonic wake transition and geometry
+.I 068
+.W
+detect transition phenomena in boundary layers .
+.I 069
+.W
+detect transition phenomena in hypersonic wakes .
+.I 071
+.W
+model for the vortex wake behind a cruciform wing .
+.I 072
+.W
+transonic flow in airfoil and linearized transonic flow theory .
+.I 074
+.W
+transonic flow around an arbitrary smooth thin airfoil .
+.I 079
+.W
+chapman-enskog theory .
+.I 080
+.W
+surface mass transfer on hypersonic viscous interactions .
+.I 081
+.W
+surface heat and mass transfer on hypersonic flow .
+.I 082
+.W
+hypersonic viscous interactions and insulated flat plate .
+.I 083
+.W
+what controls leading-edge attachment at transonic speeds .
+.I 084
+.W
+three-point boundary-value problem for the blasius equation with transformations
+.I 085
+.W
+gas rarefaction on the boundary layers .
+.I 086
+.W
+transverse curvature  effect .
+.I 087
+.W
+the slip effect .
+.I 093
+.W
+flow field and rarefied and ionized gas and magnetic field .
+.I 094
+.W
+blunted cone mass transfer region and heat 
+.I 095
+.W
+incompressible and compressible boundary layers 
+.I 097
+.W
+aerodynamic data predict lifting-surface flutter .
+.I 098
+.W
+steady flow characteristics and flutter mechanism .
+.I 099
+.W
+rates of forced convective heat transfer from heated cylinders 
+.I 100
+.W
+boundary layer flows along non-circular cylinders .
+.I 101
+.W
+blasius problem with three-point boundary conditions .
+.I 102
+.W
+heat transfer and a yawed cylinder .
+.I 103
+.W
+boundary layer velocity and distance around the cylinder .
+.I 104
+.W
+pressure data on surfaces of swept cylinders .
+.I 105
+.W
+static deflection and vibrational shapes 
+.I 106
+.W
+boundary layer on a flat plate in a shear flow and pressure gradient .
+.I 107
+.W
+inner and outer solution matching procedures and shear flow .
+.I 108
+.W
+series expansions and boundary layer on a flat plate in a shear flow .
+.I 109
+.W
+injection distribution and isothermal transpiration cooled hemisphere .
+.I 110
+.W
+asymptotic solutions .
+.I 111
+.W
+boundary layer similarity equations .
+.I 112
+.W
+hypersonic viscous interaction .
+.I 113
+.W
+viscous interactions in low reynolds at high mach .
+.I 114
+.W
+chemical reaction and similitude laws and hypersonic flows over and aerodynamics .
+.I 116
+.W
+dissociated free stream and hypersonic simulation in high enthalpy wind tunnels .
+.I 118
+.W
+vorticity effect on stagnation-point heat transfer .
+.I 119
+.W
+trust the linear viscosity-temperature solution at low reynolds number .
+.I 120
+.W
+shock layer theory comparison with merged-layer regime .
+.I 121
+.W
+kink in the surge line of a multi-stage axial compressor .
+.I 122
+.W
+aerodynamic derivatives at hypersonic mach .
+.I 123
+.W
+measuring aerodynamic derivatives and time facilities .
+.I 126
+.W
+wind-tunnel corrections for a two-dimensional aerofoil
+.I 128
+.W
+kuchemann's and multhopp's methods for calculating lift distributions  .
+.I 130
+.W
+quasi-conical flows .
+.I 131
+.W
+references on laminar and turbulent flow .
+.I 132
+.W
+parameters on laminar and turbulent flow in wind tunnel .
+.I 133
+.W
+oscillatory derivatives on sting-mounted models in wind tunnels .
+.I 135
+.W
+boundary layer and inviscid flow and shock
+.I 136
+.W
+satellite orbit contract and air drag .
+.I 137
+.W
+flow at transonic speeds about a delta  and sweptback wing .
+.I 138
+.W
+shock-induced boundary-layer separation .
+.I 139
+.W
+interference and transonic speeds .
+.I 140
+.W
+minimize sonic boom intensity .
+.I 141
+.W
+methane-air combustion and hypersonic test medium .
+.I 142
+.W
+heat transfer rate at the stagnation point of a blunt body .
+.I 143
+.W
+heat transfer distribution around a hemisphere .
+.I 145
+.W
+unsteady lift distributions on finite wings in subsonic flow .
+.I 146
+.W
+airplanes on gusts or blasts in the subsonic regime .
+.I 147
+.W
+forward or apex located controls and low subsonic and trailing-edge flaps .
+.I 148
+.W
+vehicle tumbling and its motion .
+.I 149
+.W
+imperfections on the elastic buckling of cylindrical shells .
+.I 150
+.W
+incremental and deformation theory of plastic stress-strain.
+.I 152
+.W
+structures and spans .
+.I 153
+.W
+buckling of sandwich sphere .
+.I 154
+.W
+beam deformation inelastic and temperature .
+.I 155
+.W
+internal liquid column on the breathing vibrations .
+.I 156
+.W
+shell vibration .
+.I 157
+.W
+aircraft in a noise environment procedure .
+.I 158
+.W
+fatigue of structures under acoustic loading .
+.I 160
+.W
+panels subjected to aerodynamic heating .
+.I 161
+.W
+edge loading and buckling .
+.I 163
+.W
+elastic edge restraint and panel flutter .
+.I 164
+.W
+clamped plate problem reduced to membrane boundary value .
+.I 165
+.W
+oscillatory aerodynamic forces on control surfaces at transonic mach .
+.I 167
+.W
+wing airforces and oscillating and transonic flow and rectangular .
+.I 168
+.W
+investigations of aeroelastic effects in heated flow 
+.I 169
+.W
+magnitude and distribution and configuration of lift over the cone .
+.I 170
+.W
+boat-tail and normal force .
+.I 171
+.W
+aerodynamic interference on the fin and body lift .
+.I 173
+.W
+axisymmetric deviations on load-deflection response under hydrostatic pressure .
+.I 175
+.W
+circumferential thermal buckling of circular cylindrical inaccurate .
+.I 176
+.W
+circumferential or thermal buckling due to mechanical loading .
+.I 177
+.W
+stability of conical shells
+.I 181
+.W
+compressible viscous flow in a straight channel .
+.I 182
+.W
+is viscous compressible flow areas and stability of conical shells . 
+.I 183
+.W
+jet interference with supersonic flow .
+.I 184
+.W
+thrust vector control by fluid injection .
+.I 187
+.W
+simple analytical solution to heat equation for heat input .
+.I 189
+.W
+programmed pump design method for computer .
+.I 190
+.W
+pump design equation for incompressible nonviscous flow .
+.I 196
+.W
+flutter characteristics of the exposed skin panels of the x-15 vertical stabilizer .
+.I 200
+.W
+instability times and collapse times for compressed columns in creep .
+.I 201
+.W
+theoretical studies of creep buckling .
+.I 202
+.W
+experimental studies of creep buckling .
+.I 203
+.W
+correlate creep buckling of structures and single theory .
+.I 204
+.W
+creep buckling of columns .
+.I 205
+.W
+creep buckling of round tubes under external pressure .
+.I 206
+.W
+time-to-failure with creep collapse for a long circular cylindrical shell 
+.I 208
+.W
+frequencies of vibration stresses of circular cylindrical shells .
+.I 209
+.W
+deformation initial pressure on vibration of circular cylindrical shells .
+.I 210
+.W
+discontinuity stresses at junctions in pressurized structures .
+.I 211
+.W
+stresses in edge-loaded shells of revolution .
+.I 212
+.W
+dome contours stresses on closures on cylindrical pressure vessels .
+.I 213
+.W
+stresses in pressurized shells of revolution .
+.I 214
+.W
+membrane cylinders and stiffness insight into pressurized cylinders  .
+.I 215
+.W
+classical small deflection theory for pressurized cylinders in bending .
+.I 216
+.W
+membrane theory exist in bending .
+.I 217
+.W
+stability equations of corrugated core sandwich cylinders .
+.I 218
+.W
+small deflection theory for sandwich cylinders .
+.I 219
+.W
+analysis of large deflection behaviour of conical shells .
+.I 223
+.W
+magnitude of second-order wing-body interference at high supersonic mach .
+.I 224
+.W
+method for calculating pressure on a wing .
+.I 225
+.W
+calculate wing pressure boundary-layer .
+.I 226
+.W
+navier-stokes equations solved .
+.I 227
+.W
+solving linear elliptic difference equations for convergent .
+.I 230
+.W
+ablation during flight .
+.I 231
+.W
+ablation materials .
+.I 232
+.W
+calculate flow fields for blunt-nosed bodies .
+.I 233
+.W
+properties of high-temperature air .
+.I 234
+.W
+magnitude of aerodynamic damping in of launch vehicles .
+.I 241
+.W
+circumferential stresses in a torispherical shell and internal pressure buckling . 
+.I 245
+.W
+calculating the laminar separate point for boundary layers with zero heat transfer .
+.I 246
+.W
+solutions of the laminar separation point for boundary layers with zero heat transfer .
+.I 247
+.W
+hypersonic similarity and surface pressures of ogive forebody at angle of attack .
+.I 250
+.W
+shock-induced boundary-layer separation .
+.I 251
+.W
+stable profiles of a compressible boundary layer .
+.I 252
+.W
+stability of a compressible boundary layer and moving wave .
+.I 253
+.W
+calculating the ablative mass loss .
+.I 254
+.W
+direct problem of transonic flow in the throat of a nozzle .
+.I 255
+.W
+transonic flow in the throat of a nozzle and velocity distribution .
+.I 257
+.W
+orthodox pitot-static tubes calibrations at low reynolds .
+.I 259
+.W
+interference-free drag measurements and free-flight models and low-blockage wind tunnel .
+.I 261
+.W
+blasius problem solution .
+.I 264
+.W
+lyapunov's method .
+.I 265
+.W
+shock detachment distance data .
+.I 266
+.W
+flow in channels at low reynolds .
+.I 267
+.W
+heat conduction solutions .
+.I 268
+.W
+stalling and axial compressor .
+.I 269
+.W
+axial compressor choking line .
+.I 272
+.W
+theory of quasi-conical flows developed .
+.I 273
+.W
+scale height vary with altitude in an atmosphere .
+.I 274
+.W
+jet interference with supersonic flows .
+.I 275
+.W
+flutter characteristics on square-planform double-wedge airfoils .
+.I 277
+.W
+primary influence factors on sonic boom strength .
+.I 283
+.W
+small-oscillation re-entry motions .
+.I 284
+.W
+panel flutter .
+.I 285
+.W
+wing-body, flow field interference effects be approximated .
+.I 288
+.W
+internal pressure on the buckling of circular-cylindrical shells under bending .
+.I 291
+.W
+typical structures in a noise environment .
+.I 292
+.W
+thermal fatigue endurances design method .
+.I 293
+.W
+analysis of panel flutter and deformation .
+.I 294
+.W
+panel flutter criterion .
+.I 295
+.W
+uniformly loaded sectors .
+.I 296
+.W
+solving clamped plate problems .
+.I 297
+.W
+lower buckling load of a uniform circular cylinder .
+.I 298
+.W
+buckling strength of uniform circular cylinders loaded improved linear solution  .
+.I 299
+.W
+aeroelastic effects in a flow absence of heating effects .
+.I 300
+.W
+long-hand method for fatigue damage .
+.I 301
+.W
+edge conditions on cylindrical shell buckling .
+.I 303
+.W
+non-linear deflection analyses for shell shapes .
+.I 304
+.W
+asymptotic methods for pre-buckling stresses in torispherical shells .
+.I 306
+.W
+nonequilibrium chemical constituents in the viscous shock layer ain re-entry vehicle .
+.I 314
+.W
+theories in pressure distributions on cones at hypersonic speeds .
+.I 315
+.W
+simple estimating pressure distribution in cones .
+.I 316
+.W
+viscous effects and pressure distributions .
+.I 317
+.W
+surface flexibility and laminar boundary layer .
+.I 321
+.W
+subsonic and transonic flutter data .
+.I 323
+.W
+new mass ratio and wing-flutter boundaries .
+.I 327
+.W
+shape of the drag polar of a lifting spacecraft at re-entry .
+.I 331
+.W
+separated laminar and turbulent boundary layer flows .
+.I 332
+.W
+soft elastic cores on the buckling strength of cylindrical shells .
+.I 333
+.W
+buckling of empty cylindrical shells at non-uniform pressure .
+.I 335
+.W
+thermal stresses and compressive buckling of ring-stiffened cylinders .
+.I 336
+.W
+cylinder buckling and circumferential stress system .
+.I 338
+.W
+non-linear shallow shell analysis and matrix .
+.I 339
+.W
+shape of a shroud and simulation of the nose region in hypersonic flow .
+.I 340
+.W
+wave system and static pressure over a liquid surface .
+.I 347
+.W
+shock generated vorticity on heat transfer to a blunt body .
+.I 348
+.W
+heat transfer to a blunt body in the absence of vorticity .
+.I 349
+.W
+flow fields and small reynolds number .
+.I 352
+.W
+procedure for incompressible laminar boundary layer .
+.I 353
+.W
+procedures for laminar incompressible flow with pressure gradient .
+.I 355
+.W
+shear buckling of stiffened plates .
+.I 356
+.W
+shear buckling of unstiffened rectangular plates .
+.I 360
+.W
+hypersonic shock tube flow and nitrogen in thermodynamic equilibrium .
+.I 365
+.W
+lift-drag ratios design factors at mach .
