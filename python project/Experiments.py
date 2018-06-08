@@ -75,6 +75,79 @@ def read_time(path, short=False):
     return docs, qrys, relevant_docs, "time/"
 
 # __________________________ Tests _______________________________
+
+# ______________________ Round 2 ______________________
+
+# ___________ Substitutions ___________
+def test_r2_sub_allallall():
+    okapi_func = OkapiModFunction(docs, is_sub_all=True, sub_prob=0.1, is_sub_api_all=True, sub_api_dir=dir.replace('/', ''), is_w2v_sub_all=True, w2v_sub_sim=0.5)
+    run_save(okapi_func, "r2_sub_allallall")
+def test_r2_sub_bIDFbIDFbIDF():
+    okapi_func = OkapiModFunction(docs, is_sub_idf_bottom=True, sub_prob=0.1, sub_idf_bottom=5, is_sub_api_idf_bottom=True, sub_api_dir=dir.replace('/', ''), is_w2v_sub_idf_bottom=True, w2v_sub_sim=0.5)
+    run_save(okapi_func, "r2_sub_bIDFbIDFbIDF")
+def test_r2_sub_nounnounnoun():
+    okapi_func = OkapiModFunction(docs, is_sub_noun=True, sub_prob=0.02, is_sub_api_noun=True, sub_api_dir=dir.replace('/', ''), is_w2v_sub_noun=True, w2v_sub_sim=0.5)
+    run_save(okapi_func, "r2_sub_nounnounnoun")
+def test_r2_sub_nounnounverb():
+    okapi_func = OkapiModFunction(docs, is_sub_noun=True, sub_prob=0.02, is_sub_api_noun=True, sub_api_dir=dir.replace('/', ''), is_w2v_sub_verb=True, w2v_sub_sim=0.5)
+    run_save(okapi_func, "r2_sub_nounnounverb")
+
+# ___________ Term - Document ___________
+def test_r2_termdoc_nounadjverbadv():
+    okapi_func = OkapiModFunction(docs, is_early_noun=True, early_noun_i=1.6, is_early_verb=True, early_verb_i=1.2, is_early_adj=True, early_adj_i=1.4, is_early_adv=True, early_adv_i=1.4)
+    run_save(okapi_func, "r2_termdoc_nounadjverbadv")
+def test_r2_termdoc_nounverb():
+    okapi_func = OkapiModFunction(docs, is_early_noun=True, early_noun_i=1.6, is_early_verb=True, early_verb_i=1.2)
+    run_save(okapi_func, "r2_termdoc_nounverb")
+def test_r2_termdoc_nounadj():
+    okapi_func = OkapiModFunction(docs, is_early_noun=True, early_noun_i=1.6, is_early_adj=True, early_adj_i=1.4)
+    run_save(okapi_func, "r2_termdoc_nounadj")
+def test_r2_termdoc_verbadv():
+    okapi_func = OkapiModFunction(docs, is_early_verb=True, early_verb_i=1.2, is_early_adv=True, early_adv_i=1.4)
+    run_save(okapi_func, "r2_termdoc_verbadv")
+
+# ___________ Parts of Speech ___________
+def test_r2_pos_noun16adj12verb12adv04():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.6, is_adj=True, adj_influence=1.2, is_verb=True, verb_influence=1.2, is_adv=True, adv_influence=0.4)
+    run_save(okapi_func, "r2_pos_noun16adj12verb12adv04")
+def test_r2_pos_noun16adj08verb12adv04():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.6, is_adj=True, adj_influence=0.8, is_verb=True, verb_influence=1.2, is_adv=True, adv_influence=0.4)
+    run_save(okapi_func, "r2_pos_noun16adj08verb12adv04")
+def test_r2_pos_noun16adj12verb06adv04():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.6, is_adj=True, adj_influence=1.2, is_verb=True, verb_influence=0.6, is_adv=True, adv_influence=0.4)
+    run_save(okapi_func, "r2_pos_noun16adj12verb06adv04")
+def test_r2_pos_noun16adj08verb06adv04():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.6, is_adj=True, adj_influence=0.8, is_verb=True, verb_influence=0.6, is_adv=True, adv_influence=0.4)
+    run_save(okapi_func, "r2_pos_noun16adj08verb06adv04")
+def test_r2_pos_noun16verb12():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.6, is_verb=True, verb_influence=1.2)
+    run_save(okapi_func, "r2_pos_noun16verb12")
+def test_r2_pos_noun16verb06():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.6, is_verb=True, verb_influence=0.6)
+    run_save(okapi_func, "r2_pos_noun16verb06")
+def test_r2_pos_noun16adj12():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.6, is_adj=True, adj_influence=1.2)
+    run_save(okapi_func, "r2_pos_noun16adj12")
+def test_r2_pos_noun16adj08():
+    okapi_func = OkapiModFunction(docs, is_noun=True, noun_influence=1.6, is_adj=True, adj_influence=0.8)
+    run_save(okapi_func, "r2_pos_noun16adj08")
+def test_r2_pos_verb12adv04():
+    okapi_func = OkapiModFunction(docs, is_verb=True, verb_influence=1.2, is_adv=True, adv_influence=0.4)
+    run_save(okapi_func, "r2_pos_verb12adv04")
+def test_r2_pos_verb06adv04():
+    okapi_func = OkapiModFunction(docs, is_verb=True, verb_influence=0.6, is_adv=True, adv_influence=0.4)
+    run_save(okapi_func, "r2_pos_verb06adv04")
+
+# ___________ Term - Term ___________
+def test_r2_termterm_cpAdjNounBAll():
+    okapi_func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True, adj_noun_pairs_m=-.25, adj_noun_pairs_b=1.75, is_bigram=True, bigram_influence=1.2)
+    run_save(okapi_func, "r2_termterm_cpAdjNounBAll")
+def test_r2_termterm_cpAdjNounBAdjNoun():
+    okapi_func = OkapiModFunction(docs, is_adj_noun_linear_pairs=True, adj_noun_pairs_m=-.25, adj_noun_pairs_b=1.75, is_adj_noun_2gram=True, adj_noun_2gram_influence=1.2)
+    run_save(okapi_func, "r2_termterm_cpAdjNounBAdjNoun")
+
+# ______________________ Round 1 ______________________
+
 def test_cosine():
     docs.normalize(docs)
     qrys.normalize(docs)
@@ -160,16 +233,16 @@ def test_early_all():
     okapi_func = OkapiModFunction(docs, is_early=True, early_term_influence=2.2)
     run_save(okapi_func, "early all i=2.2")
 def test_early_noun():
-    okapi_func = OkapiModFunction(docs, is_early_noun=True, early_term_influence=1.6)
+    okapi_func = OkapiModFunction(docs, is_early_noun=True, early_noun_i=1.6)
     run_save(okapi_func, "early noun i=1.6")
 def test_early_verb():
-    okapi_func = OkapiModFunction(docs, is_early_verb=True, early_term_influence=1.2)
+    okapi_func = OkapiModFunction(docs, is_early_verb=True, early_verb_i=1.2)
     run_save(okapi_func, "early verb i=1.2")
 def test_early_adj():
-    okapi_func = OkapiModFunction(docs, is_early_adj=True, early_term_influence=1.4)
+    okapi_func = OkapiModFunction(docs, is_early_adj=True, early_adj_i=1.4)
     run_save(okapi_func, "early adj i=1.4")
 def test_early_adv():
-    okapi_func = OkapiModFunction(docs, is_early_adv=True, early_term_influence=1.4)
+    okapi_func = OkapiModFunction(docs, is_early_adv=True, early_adv_i=1.4)
     run_save(okapi_func, "early adv i=1.4")
 def test_early_noun_adj():
     okapi_func = OkapiModFunction(docs, is_early_noun_adj=True, early_term_influence=2.6)
@@ -241,7 +314,8 @@ def test_adv_verb_bigrams():
     okapi_func = OkapiModFunction(docs, is_adv_verb_2gram=True, adv_verb_2gram_influence=2.8)
     run_save(okapi_func, "adv_verb_bigrams i=2.8")
 
-# __________________________ Train Linear _______________________________
+# __________________________ Train _______________________________
+# ______________________ Round 1 ______________________
 def train_sub_all():
     influence = 0.02
     funcs = []
@@ -627,7 +701,7 @@ def train_sub_all_old():
 
 
 # _________________________________ Main for Testing and Training ______________________________________
-if __name__ == "__main0__":
+if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = abs_path
@@ -639,6 +713,38 @@ if __name__ == "__main0__":
     query_limit = -1  # Use all queries
     doc_limit = -1  # Use all documents
     out_dir = "out/train_cran/" + dir
+
+    # ______________________ Round 2 ______________________
+
+    # ___________ Substitutions ___________
+    test_r2_sub_allallall()
+    test_r2_sub_bIDFbIDFbIDF()
+    test_r2_sub_nounnounnoun()
+    test_r2_sub_nounnounverb()
+
+    # ___________ Term - Document ___________
+    test_r2_termdoc_nounadjverbadv()
+    test_r2_termdoc_nounverb()
+    test_r2_termdoc_nounadj()
+    test_r2_termdoc_verbadv()
+
+    # ___________ Parts of Speech ___________
+    test_r2_pos_noun16adj12verb12adv04()
+    test_r2_pos_noun16adj08verb12adv04()
+    test_r2_pos_noun16adj12verb06adv04()
+    test_r2_pos_noun16adj08verb06adv04()
+    test_r2_pos_noun16verb12()
+    test_r2_pos_noun16verb06()
+    test_r2_pos_noun16adj12()
+    test_r2_pos_noun16adj08()
+    test_r2_pos_verb12adv04()
+    test_r2_pos_verb06adv04()
+
+    # ___________ Term - Term ___________
+    test_r2_termterm_cpAdjNounBAll()
+    test_r2_termterm_cpAdjNounBAdjNoun()
+
+    # ______________________ Round 1 ______________________
 
     # ___________ Tests ___________
     # test_cosine()
@@ -655,13 +761,13 @@ if __name__ == "__main0__":
     # test_sub_idf_top()
     # test_sub_idf_bottom()
 
-    test_sub_api_all()
-    test_sub_api_noun()
-    test_sub_api_verb()
-    test_sub_api_adj()
-    test_sub_api_adv()
-    test_sub_api_idf_top()
-    test_sub_api_idf_bottom()
+    # test_sub_api_all()
+    # test_sub_api_noun()
+    # test_sub_api_verb()
+    # test_sub_api_adj()
+    # test_sub_api_adv()
+    # test_sub_api_idf_top()
+    # test_sub_api_idf_bottom()
 
     # test_w2v_sub_all()
     # test_w2v_sub_noun()
@@ -918,7 +1024,7 @@ def get_vector_metadata(vc: VectorCollection):
     avg_other = other / vectors if other > 0 else 0
     return (avg_terms, avg_nouns, avg_adjs, avg_verbs, avg_advs, avg_other)
 
-if __name__ == "__main__":
+if __name__ == "__main0__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = abs_path

@@ -200,7 +200,11 @@ class OkapiFunction(DistanceFunction):
 
 class OkapiModFunction(DistanceFunction):
     def __init__(self, vector_collection: VectorCollection,
-                 is_early=False, is_early_noun=False, is_early_verb=False, is_early_adj=False, is_early_adv=False, early_term_influence=2.4,
+                 is_early=False, early_term_influence=2.4,
+                 is_early_noun=False, early_noun_i=1.6,
+                 is_early_verb=False, early_verb_i=1.2,
+                 is_early_adj=False, early_adj_i=1.4,
+                 is_early_adv=False, early_adv_i=1.4,
                  is_early_noun_adj=False, is_early_verb_adv=False,
                  is_early_not_noun=False, is_early_not_verb=False, is_early_not_adj=False, is_early_not_adv=False,
                  is_early_not_verb_adv=False, is_early_not_noun_adj=False,
@@ -244,6 +248,10 @@ class OkapiModFunction(DistanceFunction):
         self.is_early_adj = is_early_adj
         self.is_early_adv = is_early_adv
         self.early_term_influence = early_term_influence
+        self.early_noun_i = early_noun_i
+        self.early_verb_i = early_verb_i
+        self.early_adj_i = early_adj_i
+        self.early_adv_i = early_adv_i
         self.is_early_noun_adj = is_early_noun_adj
         self.is_early_verb_adv = is_early_verb_adv
         self.is_early_not_noun = is_early_not_noun
@@ -356,16 +364,16 @@ class OkapiModFunction(DistanceFunction):
                 boosts.append(boost(product, self.early_term(term)))
             if self.is_early_noun:
                 if wn.is_noun(pos):
-                    boosts.append(boost(product, self.early_term(term)))
+                    boosts.append(boost(product, self.early_term_noun(term)))
             if self.is_early_verb:
                 if wn.is_verb(pos):
-                    boosts.append(boost(product, self.early_term(term)))
+                    boosts.append(boost(product, self.early_term_verb(term)))
             if self.is_early_adj:
                 if wn.is_adjective(pos):
-                    boosts.append(boost(product, self.early_term(term)))
+                    boosts.append(boost(product, self.early_term_adj(term)))
             if self.is_early_adv:
                 if wn.is_adverb(pos):
-                    boosts.append(boost(product, self.early_term(term)))
+                    boosts.append(boost(product, self.early_term_adv(term)))
             if self.is_early_noun_adj: # Boost both adjectives and nouns
                 if wn.is_noun(pos) or wn.is_adjective(pos):
                     boosts.append(boost(product, self.early_term(term)))
@@ -608,6 +616,30 @@ class OkapiModFunction(DistanceFunction):
         posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
         term_loc = dl if posting is None else posting.offsets[0]
         return (self.early_term_influence * dl - term_loc) / dl
+
+    def early_term_noun(self, term):
+        dl = 1 if len(self.doc) == 0 else len(self.doc)
+        posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+        term_loc = dl if posting is None else posting.offsets[0]
+        return (self.early_noun_i * dl - term_loc) / dl
+
+    def early_term_verb(self, term):
+        dl = 1 if len(self.doc) == 0 else len(self.doc)
+        posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+        term_loc = dl if posting is None else posting.offsets[0]
+        return (self.early_verb_i * dl - term_loc) / dl
+
+    def early_term_adj(self, term):
+        dl = 1 if len(self.doc) == 0 else len(self.doc)
+        posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+        term_loc = dl if posting is None else posting.offsets[0]
+        return (self.early_adj_i * dl - term_loc) / dl
+
+    def early_term_adv(self, term):
+        dl = 1 if len(self.doc) == 0 else len(self.doc)
+        posting = self.vector_collection.get_term_posting_for_doc(term, self.doc.id)
+        term_loc = dl if posting is None else posting.offsets[0]
+        return (self.early_adv_i * dl - term_loc) / dl
 
     # Boosts the query term's score if it is found earlier in the query
     # Compute as a percentage of the way through the query.
