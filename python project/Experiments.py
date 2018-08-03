@@ -705,10 +705,10 @@ if __name__ == "__main__":
     abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     rel_path = "../datasets"
     f_path = abs_path
-    docs, qrys, relevant_docs, dir = read_cran(f_path, title=False)
+#    docs, qrys, relevant_docs, dir = read_cran(f_path, title=False)
 #    docs, qrys, relevant_docs, dir = read_adi(f_path)
 #    docs, qrys, relevant_docs, dir = read_med(f_path)
-#    docs, qrys, relevant_docs, dir = read_time(f_path)
+    docs, qrys, relevant_docs, dir = read_time(f_path)
 
     query_limit = -1  # Use all queries
     doc_limit = -1  # Use all documents
