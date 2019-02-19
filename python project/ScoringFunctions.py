@@ -4,6 +4,7 @@
 from collections import defaultdict
 from matplotlib import style
 import matplotlib.pyplot as plt
+import numpy as np
 import sys, json, os
 
 
@@ -108,65 +109,73 @@ def calc_all_recall(dir: str, nDir: list):
 # A precision value at recall level i is calculated as follows:
 #       p(ri) = from ri≤r≤10 max(p(r))
 # num_queries - The number of queries to represent in this graph
-def graph_precision_recall(num_queries, recall_buckets=10):
+def graph_precision_recall(num_queries, recall_buckets=20):
     style.use('fivethirtyeight')
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
 
-    with open('out/cran/human_judgement.json') as f:
+    with open('out\\train_cran\\lisa\\human_judgement.json') as f:
         human_judgement = json.load(f)
-    with open('out/cran/cosine_results.json') as f:
-        cos_results = json.load(f)
-    with open('out/cran/okapi_results.json') as f:
+    with open('out\\train_cran\\lisa\\okapi_results.json') as f:
         okapi_results = json.load(f)
+    with open('out\\train_cran\\lisa\\r3_ID14_results.json') as f:
+        r3_ID14_results = json.load(f)
 
-    with open('out/cran/okapi_isearly_results.json') as f:
-        okapi_isearly_results = json.load(f)
-    with open('out/cran/okapi_isearlynoun_results.json') as f:
-        okapi_isearlynoun_results = json.load(f)
-    with open('out/cran/okapi_isearlyverb_results.json') as f:
-        okapi_isearlyverb_results = json.load(f)
-    with open('out/cran/okapi_isearlyadj_results.json') as f:
-        okapi_isearlyadj_results = json.load(f)
-    with open('out/cran/okapi_isearlyadv_results.json') as f:
-        okapi_isearlyadv_results = json.load(f)
-    with open('out/cran/okapi_isearlynounadj_results.json') as f:
-        okapi_isearlynounadj_results = json.load(f)
+    # with open('out/cran/human_judgement.json') as f:
+    #     human_judgement = json.load(f)
+    # with open('out/cran/cosine_results.json') as f:
+    #     cos_results = json.load(f)
+    # with open('out/cran/okapi_results.json') as f:
+    #     okapi_results = json.load(f)
 
-    with open('out/cran/okapi_isearlynotnoun_results.json') as f:
-        okapi_isearlynotnoun_results = json.load(f)
-    with open('out/cran/okapi_isearlynotverb_results.json') as f:
-        okapi_isearlynotverb_results = json.load(f)
-    with open('out/cran/okapi_isearlynotadj_results.json') as f:
-        okapi_isearlynotadj_results = json.load(f)
-    with open('out/cran/okapi_isearlynotadv_results.json') as f:
-        okapi_isearlynotadv_results = json.load(f)
+    # with open('out/cran/okapi_isearly_results.json') as f:
+    #     okapi_isearly_results = json.load(f)
+    # with open('out/cran/okapi_isearlynoun_results.json') as f:
+    #     okapi_isearlynoun_results = json.load(f)
+    # with open('out/cran/okapi_isearlyverb_results.json') as f:
+    #     okapi_isearlyverb_results = json.load(f)
+    # with open('out/cran/okapi_isearlyadj_results.json') as f:
+    #     okapi_isearlyadj_results = json.load(f)
+    # with open('out/cran/okapi_isearlyadv_results.json') as f:
+    #     okapi_isearlyadv_results = json.load(f)
+    # with open('out/cran/okapi_isearlynounadj_results.json') as f:
+    #     okapi_isearlynounadj_results = json.load(f)
+    #
+    # with open('out/cran/okapi_isearlynotnoun_results.json') as f:
+    #     okapi_isearlynotnoun_results = json.load(f)
+    # with open('out/cran/okapi_isearlynotverb_results.json') as f:
+    #     okapi_isearlynotverb_results = json.load(f)
+    # with open('out/cran/okapi_isearlynotadj_results.json') as f:
+    #     okapi_isearlynotadj_results = json.load(f)
+    # with open('out/cran/okapi_isearlynotadv_results.json') as f:
+    #     okapi_isearlynotadv_results = json.load(f)
+    #
+    # with open('out/cran/okapi_isearlyq_results.json') as f:
+    #     okapi_isearlyq_results = json.load(f)
+    # with open('out/cran/okapi_isearlyqnoun_results.json') as f:
+    #     okapi_isearlyqnoun_results = json.load(f)
+    # with open('out/cran/okapi_isearlyqverb_results.json') as f:
+    #     okapi_isearlyqverb_results = json.load(f)
 
-    with open('out/cran/okapi_isearlyq_results.json') as f:
-        okapi_isearlyq_results = json.load(f)
-    with open('out/cran/okapi_isearlyqnoun_results.json') as f:
-        okapi_isearlyqnoun_results = json.load(f)
-    with open('out/cran/okapi_isearlyqverb_results.json') as f:
-        okapi_isearlyqverb_results = json.load(f)
+    # cos_query_results, r1 = calc_pr_scores(cos_results, human_judgement, num_queries)
+    okapi_query_results, r1 = calc_pr_scores(okapi_results, human_judgement, num_queries)
+    r3_ID14_query_results, r2 = calc_pr_scores(r3_ID14_results, human_judgement, num_queries)
 
-    cos_query_results, r1 = calc_pr_scores(cos_results, human_judgement, num_queries)
-    okapi_query_results, r2 = calc_pr_scores(okapi_results, human_judgement, num_queries)
-
-    okapi_isearly_query_results, r2 = calc_pr_scores(okapi_isearly_results, human_judgement, num_queries)
-    okapi_isearlynoun_query_results, r2 = calc_pr_scores(okapi_isearlynoun_results, human_judgement, num_queries)
-    okapi_isearlyverb_query_results, r2 = calc_pr_scores(okapi_isearlyverb_results, human_judgement, num_queries)
-    okapi_isearlyadj_query_results, r2 = calc_pr_scores(okapi_isearlyadj_results, human_judgement, num_queries)
-    okapi_isearlyadv_query_results, r2 = calc_pr_scores(okapi_isearlyadv_results, human_judgement, num_queries)
-    okapi_isearlynounadj_query_results, r2 = calc_pr_scores(okapi_isearlynounadj_results, human_judgement, num_queries)
-
-    okapi_isearlynotnoun_query_results, r2 = calc_pr_scores(okapi_isearlynotnoun_results, human_judgement, num_queries)
-    okapi_isearlynotverb_query_results, r2 = calc_pr_scores(okapi_isearlynotverb_results, human_judgement, num_queries)
-    okapi_isearlynotadj_query_results, r2 = calc_pr_scores(okapi_isearlynotadj_results, human_judgement, num_queries)
-    okapi_isearlynotadv_query_results, r2 = calc_pr_scores(okapi_isearlynotadv_results, human_judgement, num_queries)
-
-    okapi_isearlyq_query_results, r2 = calc_pr_scores(okapi_isearlyq_results, human_judgement, num_queries)
-    okapi_isearlyqnoun_query_results, r2 = calc_pr_scores(okapi_isearlyqnoun_results, human_judgement, num_queries)
-    okapi_isearlyqverb_query_results, r2 = calc_pr_scores(okapi_isearlyqverb_results, human_judgement, num_queries)
+    # okapi_isearly_query_results, r2 = calc_pr_scores(okapi_isearly_results, human_judgement, num_queries)
+    # okapi_isearlynoun_query_results, r2 = calc_pr_scores(okapi_isearlynoun_results, human_judgement, num_queries)
+    # okapi_isearlyverb_query_results, r2 = calc_pr_scores(okapi_isearlyverb_results, human_judgement, num_queries)
+    # okapi_isearlyadj_query_results, r2 = calc_pr_scores(okapi_isearlyadj_results, human_judgement, num_queries)
+    # okapi_isearlyadv_query_results, r2 = calc_pr_scores(okapi_isearlyadv_results, human_judgement, num_queries)
+    # okapi_isearlynounadj_query_results, r2 = calc_pr_scores(okapi_isearlynounadj_results, human_judgement, num_queries)
+    #
+    # okapi_isearlynotnoun_query_results, r2 = calc_pr_scores(okapi_isearlynotnoun_results, human_judgement, num_queries)
+    # okapi_isearlynotverb_query_results, r2 = calc_pr_scores(okapi_isearlynotverb_results, human_judgement, num_queries)
+    # okapi_isearlynotadj_query_results, r2 = calc_pr_scores(okapi_isearlynotadj_results, human_judgement, num_queries)
+    # okapi_isearlynotadv_query_results, r2 = calc_pr_scores(okapi_isearlynotadv_results, human_judgement, num_queries)
+    #
+    # okapi_isearlyq_query_results, r2 = calc_pr_scores(okapi_isearlyq_results, human_judgement, num_queries)
+    # okapi_isearlyqnoun_query_results, r2 = calc_pr_scores(okapi_isearlyqnoun_results, human_judgement, num_queries)
+    # okapi_isearlyqverb_query_results, r2 = calc_pr_scores(okapi_isearlyqverb_results, human_judgement, num_queries)
 
     max_recall = max([r1, r2])
     bucket_s = max_recall / recall_buckets  # Length between each tick on the x axis
@@ -175,11 +184,11 @@ def graph_precision_recall(num_queries, recall_buckets=10):
 
     # Algorithm and its label
     data_lists = [
-                  (okapi_isearly_query_results, 'is early'),
-                  (okapi_isearlynoun_query_results, 'is early noun'),
-                  (okapi_isearlyverb_query_results, 'is early verb'),
-                  (okapi_isearlyadj_query_results, 'is early adj'),
-                  (okapi_isearlyadv_query_results, 'is early adv'),
+                  # (okapi_isearly_query_results, 'is early'),
+                  # (okapi_isearlynoun_query_results, 'is early noun'),
+                  # (okapi_isearlyverb_query_results, 'is early verb'),
+                  # (okapi_isearlyadj_query_results, 'is early adj'),
+                  # (okapi_isearlyadv_query_results, 'is early adv'),
 #                  (okapi_isearlynounadj_query_results, 'is early noun+adj'),
 
 #                  (okapi_isearlynotnoun_query_results, 'is early nnoun'),
@@ -192,9 +201,12 @@ def graph_precision_recall(num_queries, recall_buckets=10):
 #                  (okapi_isearlyqverb_query_results, 'is early query verb'),
 
 #                  (cos_query_results, 'cosine'),
-                  (okapi_query_results, 'okapi')
+                  (okapi_query_results, 'Okapi BM25'),
+                  (r3_ID14_query_results, 'Modification')
                   ]
 
+    m = ['o', '^']
+    i = 0
     # Loop through each IR algorithm
     for score_list, label in data_lists:
         ys = [0 for x in range(recall_buckets + 1)]
@@ -205,16 +217,30 @@ def graph_precision_recall(num_queries, recall_buckets=10):
                 p = max(query[idx:])
                 ys[idx] += p[0]
         ys = [y / len(score_list) for y in ys]
-        ax1.plot(xs, ys, label=label, linewidth=2)
+        ax1.plot(xs, ys, marker=m[i], markersize=6.5, label=label, linewidth=1.5)
+        i += 1
+
+    font = {'family': 'normal',
+            'size': 16}
+    plt.rc('font', **font)
+    plt.rc('xtick', labelsize=18)
+    plt.rc('ytick', labelsize=18)
+    plt.tick_params(axis='both', which='major', labelsize=14)
+    plt.tick_params(axis='both', which='minor', labelsize=12)
 
     plt.xlabel('Recall')
     plt.ylabel('Precision')
-    plt.ylim([0.0, .55])
-    plt.xlim([0.0, max_recall + .05])
-    plt.title('Precision-Recall Curves')
+    plt.ylim([0.18, .7])
+    plt.xlim([0.0, .95])#max_recall + .05])
+    # plt.title('PR Curves on Test Benchmark')
     plt.subplots_adjust(bottom=0.09)
     plt.legend()
-    plt.xticks(xs)
+    # plt.xticks(xs[:len(xs) - 2])
+    # plt.xticks([0, .1, .2, .3, .4, .5, .6, .7, .8, .9])
+    plt.xticks([0, .05, .1, .15, .2, .25, .3, .35, .4, .45, .5, .55, .6, .65, .7, .75, .8, .85, .9])
+    ys = [.2, .25, .3, .35, .4, .45, .5, .55, .6, .65, .7]
+    # ys = [.2, .3, .4, .5, .6, .7]
+    plt.yticks(ys)
     plt.show()
 
 

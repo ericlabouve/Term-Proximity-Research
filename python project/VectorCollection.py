@@ -92,7 +92,11 @@ class VectorCollection:
     # Called from inside parse_documents and parse_queries
     def evaluate_vectors(self, min_word_len: int, stemming_on: bool, stop_words_on: bool):
         # For each text vector
+        counter = 0
         for textvector_id, textvector in self.id_to_textvector.items():
+            counter += 1
+            if counter % 500 == 0:
+                print("Vector " + str(counter) + " Processed", end=", ")
             cur_offset = 0  # Offset of the term inside the text vector
             sentence_num = 0
             next_sentence = False
@@ -159,6 +163,7 @@ class VectorCollection:
                 elif inside_W:  # In the body of the Document
                     self.id_to_textvector[cur_doc_id].raw_text += re.sub('\n', ' ', line)
 
+        print("Building Document Vectors")
         # Fill out inverted index and term frequency table
         self.evaluate_vectors(min_word_len, stemming_on, stop_words_on)
 
@@ -179,6 +184,7 @@ class VectorCollection:
                 elif inside_W:  # In the body of the Document
                     self.id_to_textvector[cur_query_id].raw_text += re.sub('\n', ' ', line)
 
+        print("Building Query Vectors")
         # Fill out inverted index and term frequency table
         self.evaluate_vectors(min_word_len, stemming_on, stop_words_on)
 
