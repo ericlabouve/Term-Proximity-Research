@@ -1053,7 +1053,7 @@ def train_sub_all_old():
 
 
 # _________________________________ Main for Testing and Training ______________________________________
-if __name__ == "_0_main__":
+if __name__ == "__main0__":
     # abs_path = "/Users/Eric/Desktop/Thesis/projects/datasets"
     abs_path = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\datasets"
     # rel_path = "../datasets"
@@ -1140,8 +1140,8 @@ if __name__ == "_0_main__":
     # ______________________ Round 1 ______________________
 
     # ___________ Tests ___________
-    # test_cosine()
-    # test_okapi()
+    test_cosine()
+    test_okapi()
     #
     # test_is_remove_adj()
     # test_is_remove_adv()
@@ -1253,9 +1253,11 @@ if __name__ == "_0_main__":
 
 
 # _________________________________ Main for Lucene ______________________________________
-if __name__ == "__main__":
-    notitle_results = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\python project\out\train_cran\lisa\lucene_notitles_results.json"
-    title_results = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\python project\out\train_cran\lisa\lucene_titles_results.json"
+if __name__ == "__main0__":
+    # notitle_results = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\python project\out\train_cran\lisa\lucene_notitles_results.json"
+    notitle_results = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\python project\out\train_cran\lisa\lucene_notitles_noedit_results.json"
+    # title_results = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\python project\out\train_cran\lisa\lucene_titles_results.json"
+    title_results = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\python project\out\train_cran\lisa\lucene_titles_noedit_results.json"
 
     with open(notitle_results) as f:
         notitle_results_json = json.load(f)
@@ -1280,6 +1282,36 @@ if __name__ == "__main__":
     print("Lucene with no titles Lisa MAP  = " + str(avg_map))
     avg_map = score_fs.compute_avg_map(title_results_json, relevant_docs)
     print("Lucene with titles Lisa MAP  = " + str(avg_map))
+
+
+# _________________________________ Main for Solr ______________________________________
+if __name__ == "__main__":
+    notitle_results = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\python project\out\train_cran\lisa\solr_notitles_noedit_results.json"
+    title_results = r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\python project\out\train_cran\lisa\solr_titles_noedit_results.json"
+
+    with open(notitle_results) as f:
+        notitle_results_json = json.load(f)
+    with open(title_results) as f:
+        title_results_json = json.load(f)
+
+    relevant_docs = score_fs.read_human_judgement_TIME(r"C:\Users\Eric\Documents\Thesis\src\Term-Proximity-Research\datasets\lisa\LISARJ.NUM")
+
+    # Need to convert keys from string to int
+    def stringKeysToInt(json):
+        d = {}
+        for k, v in json.items():
+            d[int(k)] = v
+        return d
+
+    notitle_results_json = stringKeysToInt(notitle_results_json)
+    title_results_json = stringKeysToInt(title_results_json)
+
+    print(notitle_results_json)
+
+    avg_map = score_fs.compute_avg_map(notitle_results_json, relevant_docs)
+    print("Solr with no titles Lisa MAP  = " + str(avg_map))
+    avg_map = score_fs.compute_avg_map(title_results_json, relevant_docs)
+    print("Solr with titles Lisa MAP  = " + str(avg_map))
 
 
 # _________________________________ Main for Sandbox ______________________________________
